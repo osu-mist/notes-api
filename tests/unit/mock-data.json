@@ -1,0 +1,40 @@
+{
+  "pets": [
+    {
+      "ID": "1",
+      "NAME": "Furball",
+      "OWNER": "Tso-Liang Wu",
+      "SPECIES": "Cat"
+    },
+    {
+      "ID": "2",
+      "NAME": "Zeus",
+      "OWNER": "Jared Kosanovic",
+      "SPECIES": "Dog"
+    },
+    {
+      "ID": "3",
+      "NAME": "Mrs Norris",
+      "OWNER": "Argus Filch",
+      "SPECIES": "Cat"
+    },
+    {
+      "ID": "4",
+      "NAME": "Fang",
+      "OWNER": "Rubeus Hagrid",
+      "SPECIES": "Dog"
+    },
+    {
+      "ID": "5",
+      "NAME": "Fawkes",
+      "OWNER": "Albus Dumbledore",
+      "SPECIES": "Phoenix"
+    },
+    {
+      "ID": "6",
+      "NAME": "Hedwig",
+      "OWNER": "Harry Potter",
+      "SPECIES": "Owl"
+    }
+  ]
+}
