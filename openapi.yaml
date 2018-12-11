@@ -41,7 +41,7 @@ paths:
           in: query
           type: string
           required: false
-          default: 'lastModified'
+          default: 'dateModified'
           description: The key by which to sort the notes in the response
         - name: sources
           in: query
