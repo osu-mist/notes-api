@@ -146,8 +146,8 @@ definitions:
           dateModified:
             type: string
             format: date-time
-            description: The date that the note was last modified. If this value is the same as dateCreated, no edits have
-              been made to the note.
+            description: The date that the note was last modified. If this value is the same as dateCreated, no edits
+              have been made to the note.
             example: 2017-07-21T17:32:28Z
       links:
         $ref: '#/definitions/SelfLink'
