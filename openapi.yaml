@@ -130,11 +130,11 @@ definitions:
           context:
             type: object
             properties:
-              type:
+              contextType:
                 type: string
                 description: The context type of the note
                 example: 'course'
-              id:
+              contextID:
                 type: string
                 description: The context id of the note
                 example: 'CS-101'
