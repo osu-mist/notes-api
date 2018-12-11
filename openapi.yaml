@@ -76,6 +76,105 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
+    post:
+      summary: Create a new note
+      tags:
+        - notes
+      operationId: postNotes
+      parameters:
+        - in: body
+          name: requestBody
+          schema:
+            $ref: '#/definitions/NoteResource'
+      responses:
+        200:
+          description: Successfully created a note
+          schema:
+            $ref: '#/definitions/NoteResult'
+        400:
+          description: Invalid note object
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Errors'
+  /notes/{noteID}:
+    parameters:
+      - name: noteID
+        in: path
+        type: string
+        required: true
+    patch:
+      summary: Edit an existing note
+      tags:
+        - notes
+      operationId: patchNoteByID
+      parameters:
+        - in: body
+          name: requestBody
+          schema:
+            type: object
+            properties:
+              note:
+                $ref: '#/definitions/note'
+              permissions:
+                $ref: '#/definitions/permissions'
+              dateCreated:
+                $ref: '#/definitions/dateCreated'
+      responses:
+        200:
+          description: Successfully updated the note
+          schema:
+            $ref: '#/definitions/NoteResult'
+        400:
+          description: Invalid patch body
+          schema:
+            $ref: '#/definitions/Errors'
+        404:
+          description: Note not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Errors'
+    delete:
+      summary: Delete an existing note
+      tags:
+        - notes
+      operationId: deleteNoteByID
+      responses:
+        204:
+          description: Successfully deleted the note
+        404:
+          description: Note not found
+          schema:
+            $ref: '#/definitions/Errors'
+  /notes/{noteID}/versions:
+    parameters:
+      - name: noteID
+        in: path
+        type: string
+        required: true
+    get:
+      summary: Get version history of a note
+      tags:
+        - notes
+      operationId: getVersions
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/VersionHistoryResult'
+        404:
+          description: Note not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Errors'
 parameters:
   authorization:
     name: Authorization
@@ -213,6 +312,12 @@ definitions:
                   $ref: '#/definitions/permissions'
                 dateCreated:
                   $ref: '#/definitions/dateCreated'
+  VersionHistoryResult:
+    properties:
+      links:
+        $ref: '#/definitions/SelfLink'
+      data:
+        $ref: '#/definitions/VersionHistoryResource'
   Error:
     properties:
       status:
