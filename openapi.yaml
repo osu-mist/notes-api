@@ -159,6 +159,10 @@ paths:
           description: Note not found
           schema:
             $ref: '#/definitions/Errors'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Errors'
   /notes/{noteID}/versions:
     parameters:
       - $ref: '#/parameters/noteID'
