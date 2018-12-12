@@ -142,10 +142,10 @@ The following instructions show you how to get data from external endpoints for 
         url: 'https://api.example.com'
     ```
 
-2. Copy [api/v1/db/http/pets-dao-example.js](api/v1/db/http/pets-dao-example.js) to `api/v1/db/http/<resources>-dao.js` and modify as necessary:
+2. Copy [api/v1/db/http/notes-dao.js](api/v1/db/http/pets-dao-example.js) to `api/v1/db/http/<resources>-dao.js` and modify as necessary:
 
     ```shell
-    $ cp api/v1/db/http/pets-dao-example.js api/v1/db/http/<resources>-dao.js
+    $ cp api/v1/db/http/notes-dao.js api/v1/db/http/<resources>-dao.js
     ```
 
 3. Make sure to require the correct path for the new DAO file at path handlers files:
@@ -213,10 +213,10 @@ The following instructions show you how to connect the API to an Oracle database
     $ git mv api/v1/db/oracledb/connection-example.js api/v1/db/oracledb/connection.js
     ```
 
-6. Copy [api/v1/db/oracledb/pets-dao-example.js](api/v1/db/oracledb/pets-dao-example.js) to `api/v1/db/oracledb/<resources>-dao.js` and modify as necessary:
+6. Copy [api/v1/db/oracledb/notes-dao.js](api/v1/db/oracledb/pets-dao-example.js) to `api/v1/db/oracledb/<resources>-dao.js` and modify as necessary:
 
     ```shell
-    $ cp api/v1/db/oracledb/pets-dao-example.js api/v1/db/oracledb/<resources>-dao.js
+    $ cp api/v1/db/oracledb/notes-dao.js api/v1/db/oracledb/<resources>-dao.js
     ```
 
 7. Make sure to require the correct path for the new DAO file at path handlers files:
