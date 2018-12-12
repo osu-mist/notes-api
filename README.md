@@ -80,10 +80,146 @@ Run unit tests:
 ```shell
 # Using npm
 $ npm test
-
-# Using gulp
-$ gulp test
 ```
+
+## Base project off the skeleton
+
+### Base a new project off the skeleton
+
+1. Clone the skeleton:
+
+    ```shell
+    $ git clone --origin skeleton git@github.com:osu-mist/express-api-skeleton.git <my-api>
+    ```
+
+2. Rename project by modifying [package.json](./package.json).
+
+3. We use [express-openapi](https://www.npmjs.com/package/express-openapi) to generate API by inheriting openapi.yaml. Create path handlers and put them into corresponding directories. For example:
+
+    * The path handler for `/api/v1/pets` should go to [api/v1/paths/pet.js](api/v1/paths/pet.js)
+    * The path handler for `/api/v1/pets/{id}` should go to [api/v1/paths/pet/{id}.js](api/v1/paths/pet/{id}.js)
+
+4. Copy [api/v1/serializers/pets-serializers.js](api/v1/serializers/pets-serializers.js) to `api/v1/serializers/<resources>-serializers.js` and modify as necessary:
+
+    ```shell
+    $ cp api/v1/serializers/pets-serializers.js api/v1/serializers/<resources>-serializers.js
+    ```
+
+### Base an existing project off / Incorporate updates from the skeleton
+
+1. Add the skeleton as a remote:
+
+    ```shell
+    $ git remote add skeleton git@github.com:osu-mist/express-api-skeleton.git
+    ```
+
+2. Fetch updates from the skeleton:
+
+    ```shell
+    $ git fetch skeleton
+    ```
+
+3. Merge the skeleton into your codebase:
+
+    ```shell
+    $ git checkout feature/CO-1234-branch
+    $ git merge skeleton/master
+    $ git commit -v
+    ```
+
+## Getting data source from HTTP endpoints
+
+The following instructions show you how to get data from external endpoints for use in the API.
+
+1. Configure data source section in the `/config/default.yaml`. For example:
+
+    ```yaml
+    httpDataSource:
+        url: 'https://api.example.com'
+    ```
+
+2. Copy [api/v1/db/http/notes-dao.js](api/v1/db/http/pets-dao-example.js) to `api/v1/db/http/<resources>-dao.js` and modify as necessary:
+
+    ```shell
+    $ cp api/v1/db/http/notes-dao.js api/v1/db/http/<resources>-dao.js
+    ```
+
+3. Make sure to require the correct path for the new DAO file at path handlers files:
+
+    ```js
+    const petsDAO = require('../db/http/<resources>-dao');
+    ```
+
+## Getting data source from the Oracle Database
+
+The following instructions show you how to connect the API to an Oracle database.
+
+1. Install [Oracle Instant Client](http://www.oracle.com/technetwork/database/database-technologies/instant-client/overview/index.html) by following [this installation guide](https://oracle.github.io/odpi/doc/installation.html).
+
+
+2. Install [oracledb](https://www.npmjs.com/package/oracledb) via package management:
+
+    ```shell
+    # Using yarn (recommended)
+    $ yarn add oracledb
+
+    # Using npm
+    $ npm install oracledb
+    ```
+
+3. Define `database` section in the `/config/default.yaml` to be like:
+
+    ```yaml
+    database:
+      connectString: ${DB_URL}
+      user: ${DB_USER}
+      password: ${DB_PASSWD}
+      poolMin: 30
+      poolMax: 30
+      poolIncrement: 0
+    ```
+
+    **Options for database configuration**:
+
+    | Option | Description |
+    | ------ | ----------- |
+    | **poolMin** | The minimum number of connections a connection pool maintains, even when there is no activity to the target database. |
+    | **poolMax** | The maximum number of connections that can be open in the connection pool. |
+    | **poolIncrement** | The number of connections that are opened whenever a connection request exceeds the number of currently open connections. |
+
+    > Note: To avoid `ORA-02396: exceeded maximum idle time` and prevent deadlocks, the [best practice](https://github.com/oracle/node-oracledb/issues/928#issuecomment-398238519) is to keep `poolMin` the same as `poolMax`. Also, ensure [increasing the number of worker threads](https://github.com/oracle/node-oracledb/blob/node-oracledb-v1/doc/api.md#-82-connections-and-number-of-threads) available to node-oracledb. The thread pool size should be at least equal to the maximum number of connections and less than 128.
+
+4. If the SQL codes/queries contain intellectual property like Banner table names, put them into `api/v1/db/oracledb/contrib` folder and use [git-submodule](https://git-scm.com/docs/git-submodule) to manage submodules:
+
+    * Add the given repository as a submodule at `api/v1/db/oracledb/contrib`:
+
+        ```shell
+        $ git submodule add <contrib_repo_git_url> api/v1/db/oracledb/contrib
+        ```
+
+    * Fetch the submodule from the contrib repository:
+
+        ```shell
+        $ git submodule update --init
+        ```
+
+5. Rename [api/v1/db/oracledb/connection-example.js](api/v1/db/oracledb/connection-example.js) to `api/v1/db/oracledb/connection.js`:
+
+    ```shell
+    $ git mv api/v1/db/oracledb/connection-example.js api/v1/db/oracledb/connection.js
+    ```
+
+6. Copy [api/v1/db/oracledb/notes-dao.js](api/v1/db/oracledb/pets-dao-example.js) to `api/v1/db/oracledb/<resources>-dao.js` and modify as necessary:
+
+    ```shell
+    $ cp api/v1/db/oracledb/notes-dao.js api/v1/db/oracledb/<resources>-dao.js
+    ```
+
+7. Make sure to require the correct path for the new DAO file at path handlers files:
+
+    ```js
+    const petsDAO = require('../db/oracledb/<resources>-dao');
+    ```
 
 ## Docker
 

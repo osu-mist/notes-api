@@ -4,6 +4,7 @@ const petsDAO = require('../../db/json/pets-dao-example');
 
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { openapi: { paths } } = appRoot.require('utils/load-openapi');
+const petsDAO = require('../../db/json/notes-dao');
 
 /**
  * @summary Get pet by unique ID
