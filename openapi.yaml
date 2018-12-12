@@ -41,7 +41,7 @@ paths:
           in: query
           type: string
           required: false
-          default: 'dateModified'
+          default: 'lastModified'
           description: The key by which to sort the notes in the response
         - name: sources
           in: query
@@ -85,7 +85,18 @@ paths:
         - in: body
           name: requestBody
           schema:
-            $ref: '#/definitions/NoteResource'
+            type: object
+            properties:
+              note:
+                $ref: '#/definitions/note'
+              studentID:
+                $ref: '#/definitions/studentID'
+              creatorID:
+                $ref: '#/definitions/creatorID'
+              permissions:
+                $ref: '#/definitions/permissions'
+              context:
+                $ref: '#/definitions/context'
       responses:
         200:
           description: Successfully created a note
@@ -101,10 +112,7 @@ paths:
             $ref: '#/definitions/Errors'
   /notes/{noteID}:
     parameters:
-      - name: noteID
-        in: path
-        type: string
-        required: true
+      - $ref: '#/parameters/noteID'
     patch:
       summary: Edit an existing note
       tags:
@@ -153,10 +161,7 @@ paths:
             $ref: '#/definitions/Errors'
   /notes/{noteID}/versions:
     parameters:
-      - name: noteID
-        in: path
-        type: string
-        required: true
+      - $ref: '#/parameters/noteID'
     get:
       summary: Get version history of a note
       tags:
@@ -175,6 +180,13 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
+parameters:
+  noteID:
+    name: noteID
+    in: path
+    type: string
+    required: true
+    description: A unique ID of a note concatenating the student ID that the note is for with a random string
 definitions:
   noteID:
     type: string
@@ -220,7 +232,7 @@ definitions:
     format: date-time
     description: The original date that the note was created
     example: 2017-07-21T17:32:28Z
-  dateModified:
+  lastModified:
     type: string
     format: date-time
     description: The date that the note was last modified. If this value is the same as dateCreated, no edits
@@ -257,8 +269,8 @@ definitions:
             $ref: '#/definitions/context'
           dateCreated:
             $ref: '#/definitions/dateCreated'
-          dateModified:
-            $ref: '#/definitions/dateModified'
+          lastModified:
+            $ref: '#/definitions/lastModified'
       links:
         $ref: '#/definitions/SelfLink'
   NoteResult:
