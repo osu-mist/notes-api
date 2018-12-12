@@ -92,4 +92,4 @@ env.bak/
 venv.bak/
 
 # Local JSON database
-db
+/db/
