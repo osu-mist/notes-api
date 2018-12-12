@@ -40,8 +40,13 @@ paths:
         - name: sortKey
           in: query
           type: string
-          required: false
+          enum:
+            - 'lastModified'
+            - 'source'
+            - 'permissions'
+            - 'contextType'
           default: 'lastModified'
+          required: false
           description: The key by which to sort the notes in the response
         - name: sources
           in: query
@@ -259,6 +264,7 @@ definitions:
     example: 123456789-abc123
   note:
     type: string
+    maxLength: 150
     description: The contents of the note
   studentID:
     type: string
