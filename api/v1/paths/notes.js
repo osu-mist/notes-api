@@ -17,11 +17,10 @@ const get = async (req, res) => {
     if (!studentIDRegex.test(studentID)) {
       return errorBuilder(res, 400, ['studentID query parameter must be 9 digits']);
     }
-    const notes = notesDAO.getNotes(req.query);
-    if (!notes) {
+    const result = notesDAO.getNotes(req.query);
+    if (!result) {
       return errorBuilder(res, 404, 'studentID not found');
     }
-    const result = await notesDAO.getPets(req.query);
     return res.send(result);
   } catch (err) {
     return errorHandler(res, err);
