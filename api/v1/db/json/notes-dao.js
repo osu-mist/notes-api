@@ -12,11 +12,13 @@ const { serializeNotes } = require('../../serializers/notes-serializer');
  */
 const getNotes = query => new Promise((resolve, reject) => {
   try {
-    const { studentID } = query;
+    const {
+      studentID, contextTypes,
+    } = query;
     const dirPath = `/db/${studentID}`;
 
     let files;
-    const rawNotes = [];
+    let rawNotes = [];
     try {
       files = fs.readdirSync(`${appRoot}${dirPath}`);
     } catch (ignore) {
@@ -26,6 +28,14 @@ const getNotes = query => new Promise((resolve, reject) => {
     _.forEach(files, (file) => {
       rawNotes.push(appRoot.require(`${dirPath}/${file}`));
     });
+
+    if (contextTypes) {
+      const contexts = contextTypes.toString().split(',');
+      console.log(`contexts: ${contexts}`);
+      rawNotes = _.filter(rawNotes, it => _.includes(contexts, it.context.contextType));
+    }
+
+    rawNotes = _.sortBy(rawNotes, it => parseInt(it.id.split('-')[1], 10));
 
     const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);
