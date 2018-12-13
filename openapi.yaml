@@ -32,7 +32,6 @@ paths:
         - name: studentID
           in: query
           type: string
-          pattern: ^\d{9}$
           required: true
           description: 9-digit OSU ID of student whose notes will be retrieved
         - name: q

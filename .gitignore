@@ -93,6 +93,3 @@ venv.bak/
 
 # JetBrains IDEs
 .idea
-
-# Local JSON database
-/db/
