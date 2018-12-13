@@ -23,6 +23,6 @@ const get = async (req, res) => {
   }
 };
 
-get.apiDoc = paths['/pets/{id}'].get;
+get.apiDoc = paths['/notes/{noteID}'].get;
 
 module.exports = { get };

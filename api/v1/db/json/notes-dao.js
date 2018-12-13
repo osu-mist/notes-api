@@ -1,7 +1,7 @@
 const appRoot = require('app-root-path');
 // const _ = require('lodash');
 
-const { SerializedNotes } = require('../../serializers/notes-serializer');
+const { serializeNotes } = require('../../serializers/notes-serializer');
 
 /**
  * @summary Return a list of notes
@@ -12,10 +12,16 @@ const { SerializedNotes } = require('../../serializers/notes-serializer');
 const getNotes = query => new Promise((resolve, reject) => {
   try {
     const { studentID } = query;
+    const filePath = `/db/${studentID}.json`;
 
-    const rawNotes = appRoot.require(`/db/${studentID}`);
+    let rawNotes;
+    try {
+      rawNotes = appRoot.require(filePath);
+    } catch (err) {
+      rawNotes = [];
+    }
 
-    const serializedNotes = SerializedNotes(rawNotes, query);
+    const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);
   } catch (err) {
     reject(err);
