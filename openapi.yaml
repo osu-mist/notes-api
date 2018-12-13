@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
-  title: Express API Skeleton
-  description: Skeleton for Express APIs
+  title: Notes API
+  description: Provides operations for notes that advisors have made on students.
   version: v1
   license:
     name: GNU Affero General Public License Version 3
@@ -16,31 +16,65 @@ host: api.oregonstate.edu
 basePath: /v1
 externalDocs:
   description: GitHub Repository
-  url: https://github.com/osu-mist/express-api-skeleton
+  url: https://github.com/osu-mist/notes-api
 produces:
   - application/json
 paths:
-  /pets:
+  /notes:
+    parameters:
+      - $ref: '#/parameters/authorization'
     get:
-      summary: List all pets
+      summary: Get notes for a student
       tags:
-        - pets
-      description: Get all pets
-      operationId: getPets
+        - notes
+      operationId: getNotes
       parameters:
-        - $ref: '#/parameters/authorization'
-        - $ref: '#/parameters/pageNumber'
-        - $ref: '#/parameters/pageSize'
-        - in: query
-          name: species
-          description: Search by pet species
-          required: false
+        - name: studentID
+          in: query
           type: string
+          required: true
+          description: 9-digit OSU ID of student whose notes will be retrieved
+        - name: q
+          in: query
+          type: string
+          required: false
+          description: Query string to be used when searching through the contents of each note
+        - name: sortKey
+          in: query
+          type: string
+          enum:
+            - 'lastModified'
+            - 'source'
+            - 'permissions'
+            - 'contextType'
+          default: 'lastModified'
+          required: false
+          description: The key by which to sort the notes in the response
+        - name: sources
+          in: query
+          type: array
+          items:
+            type: string
+            enum: &SOURCES
+              - 'advisorPortal'
+              - 'banner'
+              - 'degreeWorks'
+            collectionFormat: csv
+          required: false
+          description: A comma-separated list of sources to filter by
+        - name: contextTypes
+          in: query
+          type: array
+          items:
+            type: string
+            collectionFormat: csv
+          required: false
+          description: A comma-separated list of context types to filter by
       responses:
         200:
           description: Successful response
           schema:
-            $ref: '#/definitions/PetsResult'
+            $ref: '#/definitions/NotesResult'
         400:
           description: Bad request
           schema:
@@ -49,27 +83,96 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
-  /pets/{id}:
-    get:
-      summary: Info for a specific pet
+    post:
+      summary: Create a new note
       tags:
-        - pets
-      description: Get pet by unique ID
-      operationId: getPetById
+        - notes
+      operationId: postNotes
       parameters:
-        - $ref: '#/parameters/authorization'
-        - name: id
-          in: path
-          description: Unique Pet ID
-          required: true
-          type: string
+        - in: body
+          name: requestBody
+          schema:
+            type: object
+            properties:
+              note:
+                $ref: '#/definitions/note'
+              studentID:
+                $ref: '#/definitions/studentID'
+              creatorID:
+                $ref: '#/definitions/creatorID'
+              permissions:
+                $ref: '#/definitions/permissions'
+              context:
+                $ref: '#/definitions/context'
+            required:
+              - note
+              - studentID
+              - creatorID
+              - context
+      responses:
+        201:
+          description: Successfully created a note
+          schema:
+            $ref: '#/definitions/NoteResult'
+          headers:
+            Location:
+              type: string
+              format: url
+              description: Location of the newly created resource
+        400:
+          description: Invalid note object
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Errors'
+  /notes/{noteID}:
+    parameters:
+      - $ref: '#/parameters/authorization'
+      - $ref: '#/parameters/noteID'
+    patch:
+      summary: Edit an existing note
+      tags:
+        - notes
+      operationId: patchNoteByID
+      parameters:
+        - in: body
+          name: requestBody
+          schema:
+            type: object
+            properties:
+              note:
+                $ref: '#/definitions/note'
+              permissions:
+                $ref: '#/definitions/permissions'
       responses:
         200:
-          description: Successful response
+          description: Successfully updated the note
           schema:
-            $ref: '#/definitions/PetResult'
+            $ref: '#/definitions/NoteResult'
+        400:
+          description: Invalid patch body
+          schema:
+            $ref: '#/definitions/Errors'
         404:
-          description: PetResource not found
+          description: Note not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Errors'
+    delete:
+      summary: Delete an existing note
+      tags:
+        - notes
+      operationId: deleteNoteByID
+      responses:
+        204:
+          description: Successfully deleted the note
+        404:
+          description: Note not found
           schema:
             $ref: '#/definitions/Errors'
         500:
@@ -77,114 +180,68 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 parameters:
+  noteID:
+    name: noteID
+    in: path
+    type: string
+    required: true
+    description: A unique ID of a note concatenating the student ID that the note is for with a random string
   authorization:
     name: Authorization
     in: header
     type: string
     required: true
     description: '"Bearer [token]" where [token] is your OAuth2 access token'
-  pageNumber:
-    name: page[number]
-    in: query
-    type: integer
-    required: false
-    description: Page number of results
-    default: 1
-    minimum: 1
-  pageSize:
-    name: page[size]
-    in: query
-    type: integer
-    required: false
-    description: Number of results to return
-    default: 25
-    maximum: 500
-    minimum: 1
 definitions:
-  Meta:
+  NoteResource:
     properties:
-      totalResults:
-        type: integer
-        description: Total number of results
-        example: 10
-      totalPage:
-        type: integer
-        description: Total number of pages
-        example: 10
-      currentPageNumber:
-        type: integer
-        description: Page number of the returned results
-        example: 1
-      currentPageSize:
-        type: integer
-        description: Number of results per page
-        example: 25
+      id:
+        $ref: '#/definitions/noteID'
+      type:
+        type: string
+        enum:
+          - note
+      attributes:
+        type: object
+        properties:
+          note:
+            $ref: '#/definitions/note'
+          studentID:
+            $ref: '#/definitions/studentID'
+          creatorID:
+            $ref: '#/definitions/creatorID'
+          source:
+            $ref: '#/definitions/source'
+          permissions:
+            $ref: '#/definitions/permissions'
+          context:
+            $ref: '#/definitions/context'
+          dateCreated:
+            $ref: '#/definitions/dateCreated'
+          lastModified:
+            $ref: '#/definitions/lastModified'
+      links:
+        $ref: '#/definitions/SelfLink'
+  NoteResult:
+    properties:
+      links:
+        $ref: '#/definitions/SelfLink'
+      data:
+        $ref: '#/definitions/NoteResource'
+  NotesResult:
+    properties:
+      links:
+        $ref: '#/definitions/SelfLink'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/NoteResource'
   SelfLink:
     properties:
       self:
         type: string
         format: url
         description: Self-link of current resource
-  PaginationLinks:
-    properties:
-      first:
-        type: string
-        format: url
-        description: The first page of data
-      last:
-        type: string
-        format: url
-        description: The last page of data
-      prev:
-        type: string
-        format: url
-        description: The previous page of data
-      next:
-        type: string
-        format: url
-        description: The next page of data
-  PetResource:
-    properties:
-      id:
-        type: string
-        description: A unique ID of pet
-      type:
-        type: string
-        enum: [pet]
-      links:
-        $ref: '#/definitions/SelfLink'
-      attributes:
-        properties:
-          name:
-            type: string
-            description: Name of pet
-            example: Hedwig
-          owner:
-            type: string
-            description: Name of owner
-            example: Harry Potter
-          species:
-            type: string
-            description: Species of pet
-            example: Owl
-  PetResult:
-    properties:
-      links:
-        $ref: '#/definitions/SelfLink'
-      data:
-        $ref: '#/definitions/PetResource'
-  PetsResult:
-    properties:
-      links:
-        allOf:
-          - $ref: '#/definitions/SelfLink'
-          - $ref: '#/definitions/PaginationLinks'
-      meta:
-        $ref: '#/definitions/Meta'
-      data:
-        type: array
-        items:
-          $ref: '#/definitions/PetResource'
   Error:
     properties:
       status:
@@ -215,3 +272,55 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Error'
+  noteID:
+    type: string
+    description: A unique ID of a note concatenating the student ID that the note is for with a random string
+    example: 123456789-abc123
+  note:
+    type: string
+    maxLength: 150
+    description: The contents of the note
+  studentID:
+    type: string
+    description: The 9-digit OSU ID of the student who the note is on
+    example: '123456789'
+  creatorID:
+    type: string
+    description: The 9-digit OSU ID of the advisor who created the note
+    example: '987654321'
+  source:
+    type: string
+    enum: *SOURCES
+    description: The data source of the note
+  permissions:
+    type: string
+    enum:
+      - 'advisor'
+      - 'advisors'
+      - 'student'
+    default: 'advisor'
+    description: "A string that defines the permissions of who can view the note. 'advisor' indicates that only
+      the advisor who created the note may view it. 'advisors' indicates that all advisors can view the note.
+      'student' indicates that all advisors as well as the student who the note is on may view the note."
+  context:
+    type: object
+    properties:
+      contextType:
+        type: string
+        description: The context type of the note
+        example: 'course'
+      contextID:
+        type: string
+        description: The context id of the note
+        example: 'CS-101'
+  dateCreated:
+    type: string
+    format: date-time
+    description: The original date that the note was created
+    example: '2017-07-21T17:32:28Z'
+  lastModified:
+    type: string
+    format: date-time
+    description: The date that the note was last modified. If this value is the same as dateCreated, no edits
+      have been made to the note.
+    example: '2017-07-21T17:32:28Z'
