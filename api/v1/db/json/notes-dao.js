@@ -1,5 +1,6 @@
 const appRoot = require('app-root-path');
-// const _ = require('lodash');
+const _ = require('lodash');
+const fs = require('fs');
 
 const { serializeNotes } = require('../../serializers/notes-serializer');
 
@@ -12,14 +13,19 @@ const { serializeNotes } = require('../../serializers/notes-serializer');
 const getNotes = query => new Promise((resolve, reject) => {
   try {
     const { studentID } = query;
-    const filePath = `/db/${studentID}.json`;
+    const dirPath = `/db/${studentID}`;
 
-    let rawNotes;
+    let files;
+    const rawNotes = [];
     try {
-      rawNotes = appRoot.require(filePath);
-    } catch (err) {
-      rawNotes = [];
+      files = fs.readdirSync(`${appRoot}${dirPath}`);
+    } catch (ignore) {
+      // rawNotes should remain an empty array
     }
+
+    _.forEach(files, (file) => {
+      rawNotes.push(appRoot.require(`${dirPath}/${file}`));
+    });
 
     const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);
