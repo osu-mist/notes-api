@@ -3,7 +3,6 @@ const decamelize = require('decamelize');
 const _ = require('lodash');
 const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 
-const { paginate } = appRoot.require('utils/paginator');
 const { serializerOptions } = appRoot.require('utils/jsonapi');
 const { openapi } = appRoot.require('utils/load-openapi');
 const { querySelfLink, idSelfLink } = appRoot.require('utils/uri-builder');
@@ -35,19 +34,6 @@ const SerializedNotes = (rawNotes, query) => {
     identifierField: 'ID',
     resourceKeys: noteResourceKeys,
   };
-
-  /**
-   * Add pagination links and meta information to options if pagination is enabled
-   */
-  const pageQuery = {
-    size: query['page[size]'],
-    number: query['page[number]'],
-  };
-
-  const pagination = paginate(rawNotes, pageQuery);
-  pagination.totalResults = rawNotes.length;
-  serializerArgs.pagination = pagination;
-  rawNotes = pagination.paginatedRows;
 
   const topLevelSelfLink = querySelfLink(query, noteResourcePath);
 
