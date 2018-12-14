@@ -44,6 +44,10 @@ const getNotes = query => new Promise((resolve, reject) => {
       [it => it[sortKey] || it.context[sortKey], it => it.lastModified],
     );
 
+    _.forEach(rawNotes, (it) => {
+      it.source = 'advisor portal';
+    });
+
     const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);
   } catch (err) {
