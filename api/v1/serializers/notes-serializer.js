@@ -23,13 +23,13 @@ const serializeNotes = (rawNotes, query) => {
   const serializerArgs = {
     identifierField: 'id',
     resourceKeys: noteResourceKeys,
+    noteResourcePath,
+    topLevelSelfLink: querySelfLink(query, noteResourcePath),
   };
-
-  const topLevelSelfLink = querySelfLink(query, noteResourcePath);
 
   return new JSONAPISerializer(
     noteResourceType,
-    serializerOptions(serializerArgs, noteResourcePath, topLevelSelfLink),
+    serializerOptions(serializerArgs),
   ).serialize(rawNotes);
 };
 
@@ -43,13 +43,13 @@ const serializeNote = (rawNote) => {
   const serializerArgs = {
     identifierField: 'id',
     resourceKeys: noteResourceKeys,
+    noteResourcePath,
+    topLevelSelfLink: idSelfLink(rawNote.ID, noteResourcePath),
   };
-
-  const topLevelSelfLink = idSelfLink(rawNote.ID, noteResourcePath);
 
   return new JSONAPISerializer(
     noteResourceType,
-    serializerOptions(serializerArgs, noteResourcePath, topLevelSelfLink),
+    serializerOptions(serializerArgs),
   ).serialize(rawNote);
 };
 module.exports = { serializeNotes, serializeNote };
