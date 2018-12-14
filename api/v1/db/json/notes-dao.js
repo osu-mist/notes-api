@@ -5,7 +5,7 @@ const fs = require('fs');
 const { serializeNotes } = require('../../serializers/notes-serializer');
 
 /**
- * @summary Return a list of notes
+ * @summary Return a list of notes filtered/sorted by query parameters
  * @function
  * @param {Object} query Query parameters
  * @returns {Promise} Promise object represents a list of notes
@@ -13,7 +13,7 @@ const { serializeNotes } = require('../../serializers/notes-serializer');
 const getNotes = query => new Promise((resolve, reject) => {
   try {
     const {
-      studentID, contextTypes,
+      studentID, q, sortKey, contextTypes,
     } = query;
     const dirPath = `/db/${studentID}`;
 
@@ -22,7 +22,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     try {
       files = fs.readdirSync(`${appRoot}${dirPath}`);
     } catch (ignore) {
-      // rawNotes should remain an empty array
+      // rawNotes should remain an empty array if directory does not exist
     }
 
     _.forEach(files, (file) => {
@@ -31,11 +31,18 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     if (contextTypes) {
       const contexts = contextTypes.toString().split(',');
-      console.log(`contexts: ${contexts}`);
       rawNotes = _.filter(rawNotes, it => _.includes(contexts, it.context.contextType));
     }
 
-    rawNotes = _.sortBy(rawNotes, it => parseInt(it.id.split('-')[1], 10));
+    if (q) {
+      rawNotes = _.filter(rawNotes, it => _.includes(it.note, q));
+    }
+
+    // sort first by sortKey, and then by lastModified within each sorted group
+    rawNotes = _.sortBy(
+      rawNotes,
+      [it => it[sortKey] || it.context[sortKey], it => it.lastModified],
+    );
 
     const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);
