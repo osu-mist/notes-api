@@ -105,11 +105,8 @@ initialize({
   app: appRouter,
   apiDoc: openapi,
   paths: `${appRoot}/api/v1/paths`,
-  consumesMiddleware: {
-    'application/json': compose([bodyParser.json(), bodyParserError]),
-  },
-  errorMiddleware: runtimeErrors,
-  errorTransformer,
+  errorMiddleware,
+  errorTransformer: (openapiError, ajvError) => Object.assign({}, openapiError, ajvError),
 });
 
 /**
