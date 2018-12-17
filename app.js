@@ -8,6 +8,7 @@ const fs = require('fs');
 const https = require('https');
 const moment = require('moment');
 const git = require('simple-git/promise');
+const bodyParser = require('body-parser');
 
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { authentication } = appRoot.require('middlewares/authentication');
@@ -28,6 +29,8 @@ const app = express();
 const appRouter = express.Router();
 const adminApp = express();
 const adminAppRouter = express.Router();
+
+app.use(bodyParser.json());
 
 /**
  * @summary Use the simple query parser to prevent the parameters which contain square brackets

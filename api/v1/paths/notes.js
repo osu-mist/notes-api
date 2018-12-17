@@ -16,6 +16,16 @@ const get = async (req, res) => {
   }
 };
 
-get.apiDoc = paths['/notes'].get;
+const post = async (req, res) => {
+  try {
+    const result = await notesDAO.postNotes(req.body);
+    return res.send(result);
+  } catch (err) {
+    return errorHandler(res, err);
+  }
+};
 
-module.exports = { get };
+get.apiDoc = paths['/notes'].get;
+post.apiDoc = paths['/notes'].post;
+
+module.exports = { get, post };

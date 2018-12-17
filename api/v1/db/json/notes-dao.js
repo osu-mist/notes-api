@@ -3,7 +3,9 @@ const _ = require('lodash');
 const fs = require('fs');
 const config = require('config');
 
-const { serializeNotes } = require('../../serializers/notes-serializer');
+const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
+
+const { dbDirectoryPath } = config.api;
 
 /**
  * @summary Return a list of notes filtered/sorted by query parameters
@@ -13,7 +15,6 @@ const { serializeNotes } = require('../../serializers/notes-serializer');
  */
 const getNotes = query => new Promise((resolve, reject) => {
   try {
-    const { dbDirectoryPath } = config.api;
     if (!fs.existsSync(`${appRoot}${dbDirectoryPath}`)) {
       reject(new Error(`DB directory path: '${dbDirectoryPath}' is invalid`));
     }
@@ -69,12 +70,12 @@ const getNotes = query => new Promise((resolve, reject) => {
   }
 });
 
-/**
- * @summary Return a specific pet by unique ID
- * @function
- * @param {string} id Unique pet ID
- * @returns {Promise} Promise object represents a specific pet
- */
+// /**
+//  * @summary Return a specific pet by unique ID
+//  * @function
+//  * @param {string} id Unique pet ID
+//  * @returns {Promise} Promise object represents a specific pet
+//  */
 // const getPetById = id => new Promise((resolve, reject) => {
 //   try {
 //     const rawPets = appRoot.require('/tests/unit/mock-data.json').pets;
@@ -90,4 +91,31 @@ const getNotes = query => new Promise((resolve, reject) => {
 //   }
 // });
 
-module.exports = { getNotes };
+const postNotes = body => new Promise((resolve, reject) => {
+  try {
+    console.log(`body: ${JSON.stringify(body, null, 2)}`);
+    const {
+      note, studentID, creatorID,
+    } = body;
+    const context = body.context ? {
+      contextType: body.context.contextType, contextID: body.context.contextID,
+    } : null;
+    const newNote = {
+      id: '123',
+      note,
+      studentID,
+      creatorID,
+      context,
+      source: 'advisorPortal',
+    };
+    newNote.dateCreated = new Date().toISOString();
+    newNote.lastModified = newNote.dateCreated;
+
+    const serializedNote = serializeNote(newNote);
+    resolve(serializedNote);
+  } catch (err) {
+    reject(err);
+  }
+});
+
+module.exports = { getNotes, postNotes };
