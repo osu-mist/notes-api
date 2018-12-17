@@ -13,7 +13,7 @@ const { serializeNotes } = require('../../serializers/notes-serializer');
 const getNotes = query => new Promise((resolve, reject) => {
   try {
     const {
-      studentID, q, sortKey, contextTypes,
+      studentID, q, sortKey, sources, contextTypes,
     } = query;
     const dirPath = `/db/${studentID}`;
 
@@ -45,8 +45,13 @@ const getNotes = query => new Promise((resolve, reject) => {
     );
 
     _.forEach(rawNotes, (it) => {
-      it.source = 'advisor portal';
+      it.source = 'advisorPortal';
     });
+
+    if (sources) {
+      const sourcesList = sources.toString().split(',');
+      rawNotes = _.filter(rawNotes, it => _.includes(sourcesList, it.source));
+    }
 
     const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);
