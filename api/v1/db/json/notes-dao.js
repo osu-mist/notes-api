@@ -39,9 +39,13 @@ const getNotes = query => new Promise((resolve, reject) => {
     }
 
     // sort first by sortKey, and then by lastModified within each sorted group
-    rawNotes = _.sortBy(
+    rawNotes = _.orderBy(
       rawNotes,
-      [it => it[sortKey] || it.context[sortKey], it => it.lastModified],
+      [
+        sortKey.toString() === 'contextType' ? it => it.context[sortKey] : it => it[sortKey],
+        it => it.lastModified,
+      ],
+      [sortKey.toString() === 'lastModified' ? 'desc' : 'asc', 'desc'],
     );
 
     _.forEach(rawNotes, (it) => {
