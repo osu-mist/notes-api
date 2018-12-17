@@ -1,4 +1,3 @@
-const appRoot = require('app-root-path');
 const _ = require('lodash');
 const fs = require('fs');
 const config = require('config');
@@ -14,24 +13,24 @@ const { serializeNotes } = require('../../serializers/notes-serializer');
 const getNotes = query => new Promise((resolve, reject) => {
   try {
     const { dbDirectoryPath } = config.api;
-    if (!fs.existsSync(`${appRoot}${dbDirectoryPath}`)) {
+    if (!fs.existsSync(dbDirectoryPath)) {
       reject(new Error(`DB directory path: '${dbDirectoryPath}' is invalid`));
     }
 
     const {
       studentID, q, sortKey, sources, contextTypes,
     } = query;
-    const dirPath = `${dbDirectoryPath}/${studentID}`;
-    let files;
+    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
+    let noteFiles;
     let rawNotes = [];
     try {
-      files = fs.readdirSync(`${appRoot}${dirPath}`);
+      noteFiles = fs.readdirSync(studentDirPath);
     } catch (ignore) {
       // rawNotes should remain an empty array if directory does not exist
     }
 
-    _.forEach(files, (file) => {
-      rawNotes.push(appRoot.require(`${dirPath}/${file}`));
+    _.forEach(noteFiles, (file) => {
+      rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
     });
 
     if (contextTypes) {
