@@ -25,3 +25,6 @@ database:
   poolMin: 4
   poolMax: 4
   poolIncrement: 0
+
+api:
+  dbDirectoryPath: /path/to/json/database
