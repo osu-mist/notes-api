@@ -109,7 +109,6 @@ paths:
               - note
               - studentID
               - creatorID
-              - context
       responses:
         201:
           description: Successfully created a note
@@ -314,6 +313,8 @@ definitions:
         type: string
         description: The context id of the note
         example: 'CS-101'
+    required:
+      - contextType
   dateCreated:
     type: string
     format: date-time
