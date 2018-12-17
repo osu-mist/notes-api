@@ -1,5 +1,4 @@
 const appRoot = require('app-root-path');
-// const decamelize = require('decamelize');
 const _ = require('lodash');
 const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 
