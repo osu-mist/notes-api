@@ -106,23 +106,29 @@ $ npm test
 
 [Dockerfile](Dockerfile) is also provided. To run the app in a container, install [Docker](https://www.docker.com/) first, then:
 
-1. Build the docker image:
+1. Modify `WORKDIR` from the [Dockerfile](Dockerfile#L4-L5):
+
+    ```Dockerfile
+    # Copy folder to workspace
+    WORKDIR /usr/src/notes-api
+    COPY . /usr/src/notes-api
+    ```
 
 2. Build the docker image:
 
     ```shell
-    $ docker build -t <my-api> .
+    $ docker build -t notes-api .
     ```
 
 3. Run the app in a container:
 
-  ```shell
-  $ docker run -d \
-               -p 8080:8080 \
-               -p 8081:8081 \
-               -v path/to/keytools/:/usr/src/express-api-skeleton/keytools:ro \
-               -v "$PWD"/config:/usr/src/express-api-skeleton/config:ro \
-               -v "$PWD"/logs:/usr/src/express-api-skeleton/logs \
-               --name express-api-skeleton \
-               express-api-skeleton
-  ```
+    ```shell
+    $ docker run -d \
+                 -p 8080:8080 \
+                 -p 8081:8081 \
+                 -v path/to/keytools/:/usr/src/notes-api/keytools:ro \
+                 -v "$PWD"/config:/usr/src/notes-api/config:ro \
+                 -v "$PWD"/logs:/usr/src/notes-api/logs \
+                 --name notes-api \
+                 notes-api
+    ```
