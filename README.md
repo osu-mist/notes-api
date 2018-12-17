@@ -113,14 +113,14 @@ $ npm test
 
     ```Dockerfile
     # Copy folder to workspace
-    WORKDIR /usr/src/<my-api>
-    COPY . /usr/src/<my-api>
+    WORKDIR /usr/src/notes-api
+    COPY . /usr/src/notes-api
     ```
 
 2. Build the docker image:
 
     ```shell
-    $ docker build -t <my-api> .
+    $ docker build -t notes-api .
     ```
 
 3. Run the app in a container:
@@ -129,9 +129,9 @@ $ npm test
     $ docker run -d \
                  -p 8080:8080 \
                  -p 8081:8081 \
-                 -v path/to/keytools/:/usr/src/<my-api>/keytools:ro \
-                 -v "$PWD"/config:/usr/src/<my-api>/config:ro \
-                 -v "$PWD"/logs:/usr/src/<my-api>/logs \
-                 --name <my-api> \
-                 <my-api>
+                 -v path/to/keytools/:/usr/src/notes-api/keytools:ro \
+                 -v "$PWD"/config:/usr/src/notes-api/config:ro \
+                 -v "$PWD"/logs:/usr/src/notes-api/logs \
+                 --name notes-api \
+                 notes-api
     ```
