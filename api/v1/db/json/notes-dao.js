@@ -1,11 +1,40 @@
 const _ = require('lodash');
-const appRoot = require('app-root-path');
 const fs = require('fs');
 const config = require('config');
 
 const { serializeNotes } = require('../../serializers/notes-serializer');
 
-const { filterNotes } = appRoot.require('utils/filter-functions');
+/**
+ * @summary Filter notes using parameters
+ * @function
+ * @param {Object[]} rawNotes The list of notes to be filtered
+ * @param {Object} queryParams Key-value pairs of query parameters and their values
+ * @returns {Object[]} List of filtered notes
+ */
+const filterNotes = (rawNotes, queryParams) => {
+  const {
+    q, sources, sortKey, contextTypes,
+  } = queryParams;
+
+  rawNotes = contextTypes
+    ? _.filter(rawNotes, it => _.includes(contextTypes, it.context.contextType))
+    : rawNotes;
+  rawNotes = q ? _.filter(rawNotes, it => _.includes(it.note, q)) : rawNotes;
+  // sort first by sortKey, and then by lastModified within each sorted group
+  rawNotes = _.orderBy(
+    rawNotes,
+    [
+      sortKey === 'contextType' ? it => it.context[sortKey] : it => it[sortKey],
+      it => it.lastModified,
+    ],
+    [sortKey === 'lastModified' ? 'desc' : 'asc', 'desc'],
+  );
+  _.forEach(rawNotes, (it) => {
+    it.source = 'advisorPortal';
+  });
+  rawNotes = sources ? _.filter(rawNotes, it => _.includes(sources, it.source)) : rawNotes;
+  return rawNotes;
+};
 
 /**
  * @summary Return a list of notes filtered/sorted by query parameters
@@ -33,7 +62,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     _.forEach(noteFiles, (file) => {
       rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
     });
-    rawNotes = filterNotes(rawNotes, query, query.sortKey);
+    rawNotes = filterNotes(rawNotes, query);
 
     const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);
