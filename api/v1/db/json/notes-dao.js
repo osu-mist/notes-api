@@ -1,4 +1,3 @@
-const appRoot = require('app-root-path');
 const _ = require('lodash');
 const fs = require('fs');
 const config = require('config');
@@ -8,6 +7,38 @@ const { serializeNotes, serializeNote } = require('../../serializers/notes-seria
 const { dbDirectoryPath } = config.api;
 
 /**
+ * @summary Filter notes using parameters
+ * @function
+ * @param {Object[]} rawNotes The list of notes to be filtered
+ * @param {Object} queryParams Key-value pairs of query parameters and their values
+ * @returns {Object[]} List of filtered notes
+ */
+const filterNotes = (rawNotes, queryParams) => {
+  const {
+    q, sources, sortKey, contextTypes,
+  } = queryParams;
+
+  rawNotes = contextTypes
+    ? _.filter(rawNotes, it => _.includes(contextTypes, it.context.contextType))
+    : rawNotes;
+  rawNotes = q ? _.filter(rawNotes, it => _.includes(it.note, q)) : rawNotes;
+  // sort first by sortKey, and then by lastModified within each sorted group
+  rawNotes = _.orderBy(
+    rawNotes,
+    [
+      sortKey === 'contextType' ? it => it.context[sortKey] : it => it[sortKey],
+      it => it.lastModified,
+    ],
+    [sortKey === 'lastModified' ? 'desc' : 'asc', 'desc'],
+  );
+  _.forEach(rawNotes, (it) => {
+    it.source = 'advisorPortal';
+  });
+  rawNotes = sources ? _.filter(rawNotes, it => _.includes(sources, it.source)) : rawNotes;
+  return rawNotes;
+};
+
+/**
  * @summary Return a list of notes filtered/sorted by query parameters
  * @function
  * @param {Object} query Query parameters
@@ -15,53 +46,24 @@ const { dbDirectoryPath } = config.api;
  */
 const getNotes = query => new Promise((resolve, reject) => {
   try {
-    if (!fs.existsSync(`${appRoot}${dbDirectoryPath}`)) {
+    if (!fs.existsSync(dbDirectoryPath)) {
       reject(new Error(`DB directory path: '${dbDirectoryPath}' is invalid`));
     }
 
-    const {
-      studentID, q, sortKey, sources, contextTypes,
-    } = query;
-    const dirPath = `${dbDirectoryPath}/${studentID}`;
-    let files;
+    const { studentID } = query;
+    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
+    let noteFiles;
     let rawNotes = [];
     try {
-      files = fs.readdirSync(`${appRoot}${dirPath}`);
+      noteFiles = fs.readdirSync(studentDirPath);
     } catch (ignore) {
       // rawNotes should remain an empty array if directory does not exist
     }
 
-    _.forEach(files, (file) => {
-      rawNotes.push(appRoot.require(`${dirPath}/${file}`));
+    _.forEach(noteFiles, (file) => {
+      rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
     });
-
-    if (contextTypes) {
-      const contexts = contextTypes.toString().split(',');
-      rawNotes = _.filter(rawNotes, it => _.includes(contexts, it.context.contextType));
-    }
-
-    if (q) {
-      rawNotes = _.filter(rawNotes, it => _.includes(it.note, q));
-    }
-
-    // sort first by sortKey, and then by lastModified within each sorted group
-    rawNotes = _.orderBy(
-      rawNotes,
-      [
-        sortKey.toString() === 'contextType' ? it => it.context[sortKey] : it => it[sortKey],
-        it => it.lastModified,
-      ],
-      [sortKey.toString() === 'lastModified' ? 'desc' : 'asc', 'desc'],
-    );
-
-    _.forEach(rawNotes, (it) => {
-      it.source = 'advisorPortal';
-    });
-
-    if (sources) {
-      const sourcesList = sources.toString().split(',');
-      rawNotes = _.filter(rawNotes, it => _.includes(sourcesList, it.source));
-    }
+    rawNotes = filterNotes(rawNotes, query);
 
     const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);
