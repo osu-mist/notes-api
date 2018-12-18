@@ -1,8 +1,11 @@
 const _ = require('lodash');
+const appRoot = require('app-root-path');
 const fs = require('fs');
 const config = require('config');
 
 const { serializeNotes } = require('../../serializers/notes-serializer');
+
+const { filterNotes } = appRoot.require('utils/filter-functions');
 
 /**
  * @summary Return a list of notes filtered/sorted by query parameters
@@ -17,9 +20,7 @@ const getNotes = query => new Promise((resolve, reject) => {
       reject(new Error(`DB directory path: '${dbDirectoryPath}' is invalid`));
     }
 
-    const {
-      studentID, q, sortKey, sources, contextTypes,
-    } = query;
+    const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
     let noteFiles;
     let rawNotes = [];
@@ -32,34 +33,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     _.forEach(noteFiles, (file) => {
       rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
     });
-
-    if (contextTypes) {
-      const contexts = contextTypes.toString().split(',');
-      rawNotes = _.filter(rawNotes, it => _.includes(contexts, it.context.contextType));
-    }
-
-    if (q) {
-      rawNotes = _.filter(rawNotes, it => _.includes(it.note, q));
-    }
-
-    // sort first by sortKey, and then by lastModified within each sorted group
-    rawNotes = _.orderBy(
-      rawNotes,
-      [
-        sortKey.toString() === 'contextType' ? it => it.context[sortKey] : it => it[sortKey],
-        it => it.lastModified,
-      ],
-      [sortKey.toString() === 'lastModified' ? 'desc' : 'asc', 'desc'],
-    );
-
-    _.forEach(rawNotes, (it) => {
-      it.source = 'advisorPortal';
-    });
-
-    if (sources) {
-      const sourcesList = sources.toString().split(',');
-      rawNotes = _.filter(rawNotes, it => _.includes(sourcesList, it.source));
-    }
+    rawNotes = filterNotes(rawNotes, query, query.sortKey);
 
     const serializedNotes = serializeNotes(rawNotes, query);
     resolve(serializedNotes);

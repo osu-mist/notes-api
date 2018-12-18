@@ -19,11 +19,12 @@ const noteResourcePath = 'notes';
  * @returns {Object} Serialized noteResources object
  */
 const serializeNotes = (rawNotes, query) => {
+  const topLevelSelfLink = querySelfLink(query, noteResourcePath);
   const serializerArgs = {
     identifierField: 'id',
     resourceKeys: noteResourceKeys,
-    noteResourcePath,
-    topLevelSelfLink: querySelfLink(query, noteResourcePath),
+    resourcePath: noteResourcePath,
+    topLevelSelfLink,
   };
 
   return new JSONAPISerializer(
@@ -39,11 +40,12 @@ const serializeNotes = (rawNotes, query) => {
  * @returns {Object} Serialized noteResource object
  */
 const serializeNote = (rawNote) => {
+  const topLevelSelfLink = idSelfLink(rawNote.id, noteResourcePath);
   const serializerArgs = {
     identifierField: 'id',
     resourceKeys: noteResourceKeys,
-    noteResourcePath,
-    topLevelSelfLink: idSelfLink(rawNote.ID, noteResourcePath),
+    resourcePath: noteResourcePath,
+    topLevelSelfLink,
   };
 
   return new JSONAPISerializer(
