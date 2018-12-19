@@ -281,10 +281,12 @@ definitions:
     description: The contents of the note
   studentID:
     type: string
+    pattern: ^\d{9}$
     description: The 9-digit OSU ID of the student who the note is on
     example: '123456789'
   creatorID:
     type: string
+    pattern: ^\d{9}$
     description: The 9-digit OSU ID of the advisor who created the note
     example: '987654321'
   source:
