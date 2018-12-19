@@ -317,6 +317,7 @@ definitions:
         example: 'CS-101'
     required:
       - contextType
+      - contextID
   dateCreated:
     type: string
     format: date-time

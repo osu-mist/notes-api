@@ -99,18 +99,23 @@ const postNotes = body => new Promise((resolve, reject) => {
     const {
       note, studentID, creatorID,
     } = body;
+
+    // express-openapi does not correctly handle this default value so it must be specified manually
+    const permissions = body.permissions || 'advisor';
     const context = body.context ? {
       contextType: body.context.contextType, contextID: body.context.contextID,
     } : null;
 
     const counter = fs.readFileSync(`${dbDirectoryPath}/${dbCounterFileName}`)
       .toString().replace('\n', '');
+    const noteID = `${studentID}-${counter}`;
 
     const newNote = {
-      id: `${studentID}-${counter}`,
+      id: noteID,
       note,
       studentID,
       creatorID,
+      permissions,
       context,
       source: 'advisorPortal',
     };
@@ -118,6 +123,18 @@ const postNotes = body => new Promise((resolve, reject) => {
     newNote.lastModified = newNote.dateCreated;
 
     const serializedNote = serializeNote(newNote);
+
+    const studentDir = `${dbDirectoryPath}/${studentID}`;
+    if (!fs.existsSync(studentDir)) {
+      fs.mkdir(studentDir);
+    }
+    const noteFilePath = `${studentDir}/${noteID}.json`;
+
+    fs.writeFileSync(noteFilePath, JSON.stringify(newNote, null, 2), { flag: 'wx' });
+
+    const newCounter = `${(parseInt(counter, 10) + 1).toString()}\n`;
+    fs.writeFileSync(`${dbDirectoryPath}/${dbCounterFileName}`, newCounter);
+
     resolve(serializedNote);
   } catch (err) {
     reject(err);
