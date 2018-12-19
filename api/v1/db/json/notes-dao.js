@@ -5,6 +5,9 @@ const config = require('config');
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
 const { dbDirectoryPath } = config.api;
+if (!fs.existsSync(dbDirectoryPath)) {
+  throw new Error(`DB directory path: '${dbDirectoryPath}' is invalid`);
+}
 
 /**
  * @summary Filter notes using parameters
@@ -46,11 +49,6 @@ const filterNotes = (rawNotes, queryParams) => {
  */
 const getNotes = query => new Promise((resolve, reject) => {
   try {
-    const { dbDirectoryPath } = config.api;
-    if (!fs.existsSync(dbDirectoryPath)) {
-      reject(new Error(`DB directory path: '${dbDirectoryPath}' is invalid`));
-    }
-
     const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
     let noteFiles;
