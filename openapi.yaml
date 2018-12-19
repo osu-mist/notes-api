@@ -275,8 +275,8 @@ definitions:
           $ref: '#/definitions/Error'
   noteID:
     type: string
-    description: A unique ID of a note concatenating the student ID that the note is for with a random string
-    example: 123456789-abc123
+    description: A unique ID of a note concatenating the student ID that the note is for with an integer
+    example: 123456789-123
   note:
     type: string
     maxLength: 150
