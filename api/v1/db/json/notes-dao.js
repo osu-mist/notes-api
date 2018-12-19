@@ -12,6 +12,9 @@ const { serializeNotes } = require('../../serializers/notes-serializer');
  * @returns {Object[]} List of filtered notes
  */
 const filterNotes = (rawNotes, queryParams) => {
+  // This is the value of the 'source' field that will be set for all notes fetched from the DB.
+  const sourceValue = 'advisorPortal';
+
   const {
     q, sources, sortKey, contextTypes,
   } = queryParams;
@@ -30,7 +33,7 @@ const filterNotes = (rawNotes, queryParams) => {
     [sortKey === 'lastModified' ? 'desc' : 'asc', 'desc'],
   );
   _.forEach(rawNotes, (it) => {
-    it.source = 'advisorPortal';
+    it.source = sourceValue;
   });
   rawNotes = sources ? _.filter(rawNotes, it => _.includes(sources, it.source)) : rawNotes;
   return rawNotes;
