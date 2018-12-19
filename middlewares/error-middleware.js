@@ -30,8 +30,9 @@ const errorMiddleware = (err, req, res, next) => { // eslint-disable-line no-unu
       const regexResult = pathQueryRegex.exec(path);
       const formattedPath = regexResult ? regexResult[1] : path;
 
-      if (path === 'studentID' && errorCode === 'pattern.openapi.validation') {
-        details.push('studentID must be 9 digits');
+      if (_.includes(['studentID', 'creatorID'], path)
+        && errorCode === 'pattern.openapi.validation') {
+        details.push(`${path} must be 9 digits`);
       } else if (errorCode === 'enum.openapi.validation') {
         details.push(`${path} must be one of ['${error.params.allowedValues.join("', '")}']`);
       } else {

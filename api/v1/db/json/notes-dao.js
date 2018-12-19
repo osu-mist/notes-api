@@ -4,9 +4,11 @@ const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
-const { dbDirectoryPath } = config.api;
+const { dbDirectoryPath, dbCounterFileName } = config.api;
 if (!fs.existsSync(dbDirectoryPath)) {
   throw new Error(`DB directory path: '${dbDirectoryPath}' is invalid`);
+} else if (!fs.existsSync(`${dbDirectoryPath}/${dbCounterFileName}`)) {
+  throw new Error(`dbCounterFileName: ${dbCounterFileName} is invalid`);
 }
 
 /**
@@ -94,15 +96,18 @@ const getNotes = query => new Promise((resolve, reject) => {
 
 const postNotes = body => new Promise((resolve, reject) => {
   try {
-    console.log(`body: ${JSON.stringify(body, null, 2)}`);
     const {
       note, studentID, creatorID,
     } = body;
     const context = body.context ? {
       contextType: body.context.contextType, contextID: body.context.contextID,
     } : null;
+
+    const counter = fs.readFileSync(`${dbDirectoryPath}/${dbCounterFileName}`)
+      .toString().replace('\n', '');
+
     const newNote = {
-      id: '123',
+      id: `${studentID}-${counter}`,
       note,
       studentID,
       creatorID,
