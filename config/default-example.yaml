@@ -28,3 +28,5 @@ database:
 
 api:
   dbDirectoryPath: /path/to/json/database
+  # Name of the counter file. This should exist in the DB directory and only contain '{number}\n'
+  dbCounterFileName: counter.txt
