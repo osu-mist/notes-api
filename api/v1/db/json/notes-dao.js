@@ -144,4 +144,12 @@ const postNotes = body => new Promise((resolve, reject) => {
   }
 });
 
-module.exports = { getNotes, postNotes };
+const patchNoteByID = (id, body) => new Promise((resolve, reject) => {
+  try {
+    resolve(body);
+  } catch (err) {
+    reject(err);
+  }
+});
+
+module.exports = { getNotes, postNotes, patchNoteByID };
