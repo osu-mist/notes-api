@@ -74,6 +74,35 @@ const getNotes = query => new Promise((resolve, reject) => {
 });
 
 /**
+ * @summary Fetch a note from the database by its noteID
+ * @function
+ * @param noteID
+ * @returns {Object} The raw note from the DB
+ */
+const fetchNote = (noteID) => {
+  try {
+    const studentID = noteID.split('-')[0];
+    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
+    return JSON.parse(fs.readFileSync(`${studentDirPath}/${noteID}.json`, 'utf8'));
+  } catch (err) {
+    return null;
+  }
+};
+
+/**
+ * @summary Write newContents to the note with id noteID
+ * @function
+ * @param noteID
+ * @param newContents
+ * @param options Additional options for writeFileSync
+ */
+const writeNote = (noteID, newContents, options = {}) => {
+  const studentID = noteID.split('-')[0];
+  const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
+  fs.writeFileSync(noteFilePath, JSON.stringify(newContents, null, 2), options);
+};
+
+/**
  * @summary Return a specific note by noteID
  * @function
  * @param {string} noteID id of the note in the form: '{studentID}-{number}'
@@ -81,13 +110,8 @@ const getNotes = query => new Promise((resolve, reject) => {
  */
 const getNoteByID = noteID => new Promise((resolve, reject) => {
   try {
-    const studentID = noteID.split('-')[0];
-    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-
-    let rawNote;
-    try {
-      rawNote = JSON.parse(fs.readFileSync(`${studentDirPath}/${noteID}.json`, 'utf8'));
-    } catch (err) {
+    const rawNote = fetchNote(noteID);
+    if (!rawNote) {
       resolve(null);
     }
     rawNote.source = localSourceName;
@@ -131,22 +155,37 @@ const postNotes = body => new Promise((resolve, reject) => {
     if (!fs.existsSync(studentDir)) {
       fs.mkdirSync(studentDir);
     }
-    const noteFilePath = `${studentDir}/${noteID}.json`;
 
-    fs.writeFileSync(noteFilePath, JSON.stringify(newNote, null, 2), { flag: 'wx' });
+    writeNote(noteID, newNote, { flag: 'wx' });
     const newCounter = `${(parseInt(counter, 10) + 1).toString()}\n`;
     fs.writeFileSync(`${dbDirectoryPath}/${dbCounterFileName}`, newCounter);
 
-    const serializedNote = getNoteByID(noteID);
-    resolve(serializedNote);
+    resolve(getNoteByID(noteID));
   } catch (err) {
     reject(err);
   }
 });
 
-const patchNoteByID = (id, body) => new Promise((resolve, reject) => {
+/**
+ * @summary Patch a note by noteID
+ * @function
+ * @param noteID
+ * @param body
+ * @returns {Promise} Promise object that represents the patched note
+ */
+const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
   try {
-    resolve(body);
+    const rawNote = fetchNote(noteID);
+    if (!rawNote) {
+      resolve(null);
+    }
+
+    const { note, permissions } = body;
+    rawNote.note = note || rawNote.note;
+    rawNote.permissions = permissions || rawNote.permissions;
+
+    writeNote(noteID, rawNote);
+    resolve(getNoteByID(noteID));
   } catch (err) {
     reject(err);
   }
