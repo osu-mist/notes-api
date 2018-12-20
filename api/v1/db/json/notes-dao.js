@@ -99,6 +99,12 @@ const getNoteByID = noteID => new Promise((resolve, reject) => {
   }
 });
 
+/**
+ * @summary Create a new note
+ * @function
+ * @param body
+ * @returns {Promise} Promise object representing the new note
+ */
 const postNotes = body => new Promise((resolve, reject) => {
   try {
     const {
