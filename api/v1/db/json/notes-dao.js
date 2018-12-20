@@ -107,6 +107,7 @@ const postNotes = body => new Promise((resolve, reject) => {
 
     // express-openapi does not correctly handle this default value so it must be specified manually
     const permissions = body.permissions || 'advisor';
+    // ignore additional fields in context
     const context = body.context ? {
       contextType: body.context.contextType, contextID: body.context.contextID,
     } : null;
@@ -128,7 +129,7 @@ const postNotes = body => new Promise((resolve, reject) => {
 
     const studentDir = `${dbDirectoryPath}/${studentID}`;
     if (!fs.existsSync(studentDir)) {
-      fs.mkdir(studentDir);
+      fs.mkdirSync(studentDir);
     }
     const noteFilePath = `${studentDir}/${noteID}.json`;
 
