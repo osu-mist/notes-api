@@ -12,29 +12,23 @@ const { serializeNotes } = require('../../serializers/notes-serializer');
  * @returns {Object[]} List of filtered notes
  */
 const filterNotes = (rawNotes, queryParams) => {
-  // This is the value of the 'source' field that will be set for all notes fetched from the DB.
-  const sourceValue = 'advisorPortal';
+  // Safely access contextType
+  const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
 
   const {
     q, sources, sortKey, contextTypes,
   } = queryParams;
 
   rawNotes = contextTypes
-    ? _.filter(rawNotes, it => _.includes(contextTypes, it.context.contextType))
+    ? _.filter(rawNotes, it => _.includes(contextTypes, getContextType(it)))
     : rawNotes;
   rawNotes = q ? _.filter(rawNotes, it => _.includes(it.note, q)) : rawNotes;
   // sort first by sortKey, and then by lastModified within each sorted group
   rawNotes = _.orderBy(
     rawNotes,
-    [
-      sortKey === 'contextType' ? it => it.context[sortKey] : it => it[sortKey],
-      it => it.lastModified,
-    ],
+    [sortKey === 'contextType' ? it => getContextType(it) : sortKey, 'lastModified'],
     [sortKey === 'lastModified' ? 'desc' : 'asc', 'desc'],
   );
-  _.forEach(rawNotes, (it) => {
-    it.source = sourceValue;
-  });
   rawNotes = sources ? _.filter(rawNotes, it => _.includes(sources, it.source)) : rawNotes;
   return rawNotes;
 };
@@ -46,6 +40,9 @@ const filterNotes = (rawNotes, queryParams) => {
  * @returns {Promise} Promise object represents a list of notes
  */
 const getNotes = query => new Promise((resolve, reject) => {
+  // This is the value of the 'source' field that will be set for all notes fetched from the DB.
+  const sourceValue = 'advisorPortal';
+
   try {
     const { dbDirectoryPath } = config.api;
     if (!fs.existsSync(dbDirectoryPath)) {
@@ -65,6 +62,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     _.forEach(noteFiles, (file) => {
       rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
     });
+    _.forEach(rawNotes, (it) => { it.source = sourceValue; });
     rawNotes = filterNotes(rawNotes, query);
 
     const serializedNotes = serializeNotes(rawNotes, query);
