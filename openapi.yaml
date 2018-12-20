@@ -131,6 +131,24 @@ paths:
     parameters:
       - $ref: '#/parameters/authorization'
       - $ref: '#/parameters/noteID'
+    get:
+      summary: Get a note by its noteID
+      tags:
+        - notes
+      operationId: getNoteByID
+      responses:
+        200:
+          description: Successfully retrieved note
+          schema:
+            $ref: '#/definitions/NoteResult'
+        404:
+          description: Note with this noteID not found
+          schema:
+            $ref: '#/definitions/Errors'
+        500:
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/Errors'
     patch:
       summary: Edit an existing note
       tags:
