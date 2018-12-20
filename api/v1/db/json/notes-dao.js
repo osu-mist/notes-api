@@ -10,6 +10,8 @@ if (!fs.existsSync(dbDirectoryPath)) {
 } else if (!fs.existsSync(`${dbDirectoryPath}/${dbCounterFileName}`)) {
   throw new Error(`dbCounterFileName: ${dbCounterFileName} is invalid`);
 }
+// This is the value of the 'source' field that will be set for all notes fetched from the local DB.
+const localSourceName = 'advisorPortal';
 
 /**
  * @summary Filter notes using parameters
@@ -47,9 +49,6 @@ const filterNotes = (rawNotes, queryParams) => {
  * @returns {Promise} Promise object represents a list of notes
  */
 const getNotes = query => new Promise((resolve, reject) => {
-  // This is the value of the 'source' field that will be set for all notes fetched from the DB.
-  const sourceValue = 'advisorPortal';
-
   try {
     const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
@@ -64,7 +63,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     _.forEach(noteFiles, (file) => {
       rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
     });
-    _.forEach(rawNotes, (it) => { it.source = sourceValue; });
+    _.forEach(rawNotes, (it) => { it.source = localSourceName; });
     rawNotes = filterNotes(rawNotes, query);
 
     const serializedNotes = serializeNotes(rawNotes, query);
@@ -74,26 +73,31 @@ const getNotes = query => new Promise((resolve, reject) => {
   }
 });
 
-// /**
-//  * @summary Return a specific pet by unique ID
-//  * @function
-//  * @param {string} id Unique pet ID
-//  * @returns {Promise} Promise object represents a specific pet
-//  */
-// const getPetById = id => new Promise((resolve, reject) => {
-//   try {
-//     const rawPets = appRoot.require('/tests/unit/mock-data.json').pets;
-//     const rawPet = _.find(rawPets, { ID: id });
-//     if (!rawPet) {
-//       resolve(undefined);
-//     } else {
-//       const serializedPet = SerializedPet(rawPet);
-//       resolve(serializedPet);
-//     }
-//   } catch (err) {
-//     reject(err);
-//   }
-// });
+/**
+ * @summary Return a specific note by noteID
+ * @function
+ * @param {string} noteID id of the note in the form: '{studentID}-{number}'
+ * @returns {Promise} Promise object represents a specific note
+ */
+const getNoteByID = noteID => new Promise((resolve, reject) => {
+  try {
+    const studentID = noteID.split('-')[0];
+    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
+
+    let rawNote;
+    try {
+      rawNote = JSON.parse(fs.readFileSync(`${studentDirPath}/${noteID}.json`, 'utf8'));
+    } catch (err) {
+      resolve(null);
+    }
+    rawNote.source = localSourceName;
+
+    const serializedNote = serializeNote(rawNote);
+    resolve(serializedNote);
+  } catch (err) {
+    reject(err);
+  }
+});
 
 const postNotes = body => new Promise((resolve, reject) => {
   try {
@@ -118,12 +122,9 @@ const postNotes = body => new Promise((resolve, reject) => {
       creatorID,
       permissions,
       context,
-      source: 'advisorPortal',
     };
     newNote.dateCreated = new Date().toISOString();
     newNote.lastModified = newNote.dateCreated;
-
-    const serializedNote = serializeNote(newNote);
 
     const studentDir = `${dbDirectoryPath}/${studentID}`;
     if (!fs.existsSync(studentDir)) {
@@ -132,10 +133,10 @@ const postNotes = body => new Promise((resolve, reject) => {
     const noteFilePath = `${studentDir}/${noteID}.json`;
 
     fs.writeFileSync(noteFilePath, JSON.stringify(newNote, null, 2), { flag: 'wx' });
-
     const newCounter = `${(parseInt(counter, 10) + 1).toString()}\n`;
     fs.writeFileSync(`${dbDirectoryPath}/${dbCounterFileName}`, newCounter);
 
+    const serializedNote = getNoteByID(noteID);
     resolve(serializedNote);
   } catch (err) {
     reject(err);
