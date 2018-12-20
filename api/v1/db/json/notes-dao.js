@@ -197,4 +197,22 @@ const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
   }
 });
 
-module.exports = { getNotes, postNotes, patchNoteByID };
+const deleteNoteByID = noteID => new Promise((resolve, reject) => {
+  try {
+    const rawNote = fetchNote(noteID);
+    if (!rawNote) {
+      resolve(null);
+    }
+
+    const studentID = noteID.split('-')[0];
+    const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
+    fs.unlinkSync(noteFilePath);
+    resolve(true);
+  } catch (err) {
+    reject(err);
+  }
+});
+
+module.exports = {
+  getNotes, postNotes, patchNoteByID, deleteNoteByID,
+};
