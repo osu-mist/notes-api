@@ -1,8 +1,11 @@
 const _ = require('lodash');
+const appRoot = require('app-root-path');
 const fs = require('fs');
 const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
+
+const { readJSONFile, writeJSONFile } = appRoot.require('/utils/fs-operations');
 
 const { dbDirectoryPath } = config.api;
 if (!fs.existsSync(dbDirectoryPath)) {
@@ -59,7 +62,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     }
 
     _.forEach(noteFiles, (file) => {
-      rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
+      rawNotes.push(readJSONFile(`${studentDirPath}/${file}`));
     });
     _.forEach(rawNotes, (it) => { it.source = localSourceName; });
     rawNotes = filterNotes(rawNotes, query);
@@ -82,10 +85,8 @@ const getNoteByID = noteID => new Promise((resolve, reject) => {
     const studentID = noteID.split('-')[0];
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
 
-    let rawNote;
-    try {
-      rawNote = JSON.parse(fs.readFileSync(`${studentDirPath}/${noteID}.json`, 'utf8'));
-    } catch (err) {
+    const rawNote = readJSONFile(`${studentDirPath}/${noteID}.json`);
+    if (!rawNote) {
       resolve(null);
     }
     rawNote.source = localSourceName;
@@ -139,7 +140,7 @@ const postNotes = body => new Promise((resolve, reject) => {
 
     const noteFilePath = `${studentDir}/${noteID}.json`;
 
-    fs.writeFileSync(noteFilePath, JSON.stringify(newNote, null, 2), { flag: 'wx' });
+    writeJSONFile(noteFilePath, newNote, { flag: 'wx' });
     const newCounter = `${(parseInt(counter, 10) + 1).toString()}\n`;
     fs.writeFileSync(counterDir, newCounter);
 
