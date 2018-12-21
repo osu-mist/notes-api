@@ -32,8 +32,15 @@ paths:
         - name: studentID
           in: query
           type: string
+          pattern: ^\d{9}$
           required: true
           description: 9-digit OSU ID of student whose notes will be retrieved
+        - name: creatorID
+          in: query
+          type: string
+          pattern: ^\d{9}$
+          required: false
+          description: The 9-digit OSU ID of the advisor who created the note
         - name: q
           in: query
           type: string
@@ -274,8 +281,8 @@ definitions:
           $ref: '#/definitions/Error'
   noteID:
     type: string
-    description: A unique ID of a note concatenating the student ID that the note is for with a random string
-    example: 123456789-abc123
+    description: A unique ID of a note concatenating the student ID that the note is for with an integer
+    example: 123456789-123
   note:
     type: string
     maxLength: 150
