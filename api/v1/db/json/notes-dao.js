@@ -51,14 +51,12 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    let noteFiles;
-    let rawNotes = [];
-    try {
+    let noteFiles = [];
+    if (fs.existsSync(studentDirPath)) {
       noteFiles = fs.readdirSync(studentDirPath);
-    } catch (ignore) {
-      // rawNotes should remain an empty array if directory does not exist
     }
 
+    let rawNotes = [];
     _.forEach(noteFiles, (file) => {
       rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
     });
