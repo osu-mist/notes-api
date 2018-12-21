@@ -35,8 +35,10 @@ const filterNotes = (rawNotes, queryParams) => {
   const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
 
   const {
-    q, sources, sortKey, contextTypes,
+    creatorID, q, sources, sortKey, contextTypes,
   } = queryParams;
+
+  rawNotes = creatorID ? _.filter(rawNotes, it => it.creatorID === creatorID) : rawNotes;
 
   rawNotes = contextTypes
     ? _.filter(rawNotes, it => _.includes(contextTypes, getContextType(it)))

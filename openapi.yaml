@@ -34,6 +34,12 @@ paths:
           type: string
           required: true
           description: 9-digit OSU ID of student whose notes will be retrieved
+        - name: creatorID
+          in: query
+          type: string
+          pattern: ^\d{9}$
+          required: false
+          description: The 9-digit OSU ID of the advisor who created the note
         - name: q
           in: query
           type: string
