@@ -1,14 +1,16 @@
 const _ = require('lodash');
+const appRoot = require('app-root-path');
 const fs = require('fs');
+const moment = require('moment');
 const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
-const { dbDirectoryPath, dbCounterFileName } = config.api;
+const { readJSONFile, writeJSONFile } = appRoot.require('/utils/fs-operations');
+
+const { dbDirectoryPath } = config.api;
 if (!fs.existsSync(dbDirectoryPath)) {
   throw new Error(`DB directory path: '${dbDirectoryPath}' is invalid`);
-} else if (!fs.existsSync(`${dbDirectoryPath}/${dbCounterFileName}`)) {
-  throw new Error(`dbCounterFileName: ${dbCounterFileName} is invalid`);
 }
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
@@ -69,7 +71,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     }
 
     _.forEach(noteFiles, (file) => {
-      rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
+      rawNotes.push(readJSONFile(`${studentDirPath}/${file}`));
     });
     _.forEach(rawNotes, (it) => { it.source = localSourceName; });
     rawNotes = filterNotes(rawNotes, query);
@@ -91,7 +93,7 @@ const fetchNote = (noteID) => {
   try {
     const studentID = parseStudentID(noteID);
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    return JSON.parse(fs.readFileSync(`${studentDirPath}/${noteID}.json`, 'utf8'));
+    return readJSONFile(`${studentDirPath}/${noteID}.json`);
   } catch (err) {
     return null;
   }
@@ -109,7 +111,7 @@ const writeNote = (noteID, newContents, failIfExists = false) => {
   const options = failIfExists ? { flag: 'wx' } : {};
   const studentID = parseStudentID(noteID);
   const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-  fs.writeFileSync(noteFilePath, JSON.stringify(newContents, null, 2), options);
+  writeJSONFile(noteFilePath, newContents, options);
 };
 
 /**
@@ -152,8 +154,14 @@ const postNotes = body => new Promise((resolve, reject) => {
       contextType: body.context.contextType, contextID: body.context.contextID,
     } : null;
 
-    const counter = fs.readFileSync(`${dbDirectoryPath}/${dbCounterFileName}`)
-      .toString().replace('\n', '');
+    const studentDir = `${dbDirectoryPath}/${studentID}`;
+    const counterDir = `${studentDir}/counter.txt`;
+    if (!fs.existsSync(studentDir)) {
+      fs.mkdirSync(studentDir);
+      fs.writeFileSync(counterDir, '1\n', { flag: 'wx' });
+    }
+
+    const counter = fs.readFileSync(counterDir).toString().replace('\n', '');
     const noteID = `${studentID}-${counter}`;
 
     const newNote = {
@@ -164,17 +172,12 @@ const postNotes = body => new Promise((resolve, reject) => {
       permissions,
       context,
     };
-    newNote.dateCreated = new Date().toISOString();
+    newNote.dateCreated = moment().toISOString();
     newNote.lastModified = newNote.dateCreated;
-
-    const studentDir = `${dbDirectoryPath}/${studentID}`;
-    if (!fs.existsSync(studentDir)) {
-      fs.mkdirSync(studentDir);
-    }
 
     writeNote(noteID, newNote, true);
     const newCounter = `${(parseInt(counter, 10) + 1).toString()}\n`;
-    fs.writeFileSync(`${dbDirectoryPath}/${dbCounterFileName}`, newCounter);
+    fs.writeFileSync(counterDir, newCounter);
 
     resolve(getNoteByID(noteID));
   } catch (err) {
