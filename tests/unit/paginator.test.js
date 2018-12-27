@@ -2,7 +2,7 @@ const appRoot = require('app-root-path');
 const { assert } = require('chai');
 
 const { paginate } = appRoot.require('/utils/paginator');
-const rows = appRoot.require('/tests/unit/mock-data.json').validNotes;
+const rows = appRoot.require('/tests/unit/test-data.json').validNotes;
 
 describe('Test paginator', () => {
   it('number of returned results should less then page size', (done) => {
