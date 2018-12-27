@@ -4,6 +4,9 @@ const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { openapi: { paths } } = appRoot.require('utils/load-openapi');
 const notesDAO = require('../../db/json/notes-dao');
 
+/**
+ * @summary Patch note by ID
+ */
 const patch = async (req, res) => {
   try {
     const { id } = req.params;
