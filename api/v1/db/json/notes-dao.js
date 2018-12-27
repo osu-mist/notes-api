@@ -14,6 +14,14 @@ if (!fs.existsSync(dbDirectoryPath)) {
 const localSourceName = 'advisorPortal';
 
 /**
+ * @summary Parses studentID from noteID
+ * @function
+ * @param noteID
+ * @returns {string}
+ */
+const parseStudentID = noteID => noteID.split('-')[0];
+
+/**
  * @summary Filter notes using parameters
  * @function
  * @param {Object[]} rawNotes The list of notes to be filtered
@@ -81,7 +89,7 @@ const getNotes = query => new Promise((resolve, reject) => {
  */
 const fetchNote = (noteID) => {
   try {
-    const studentID = noteID.split('-')[0];
+    const studentID = parseStudentID(noteID);
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
     return JSON.parse(fs.readFileSync(`${studentDirPath}/${noteID}.json`, 'utf8'));
   } catch (err) {
@@ -94,10 +102,12 @@ const fetchNote = (noteID) => {
  * @function
  * @param noteID
  * @param newContents
- * @param options Additional options for writeFileSync
+ * @param failIfExists If true, the method will throw an error if the file
+ *                     already exists
  */
-const writeNote = (noteID, newContents, options = {}) => {
-  const studentID = noteID.split('-')[0];
+const writeNote = (noteID, newContents, failIfExists = false) => {
+  const options = failIfExists ? { flag: 'wx' } : {};
+  const studentID = parseStudentID(noteID);
   const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
   fs.writeFileSync(noteFilePath, JSON.stringify(newContents, null, 2), options);
 };
@@ -162,7 +172,7 @@ const postNotes = body => new Promise((resolve, reject) => {
       fs.mkdirSync(studentDir);
     }
 
-    writeNote(noteID, newNote, { flag: 'wx' });
+    writeNote(noteID, newNote, true);
     const newCounter = `${(parseInt(counter, 10) + 1).toString()}\n`;
     fs.writeFileSync(`${dbDirectoryPath}/${dbCounterFileName}`, newCounter);
 
