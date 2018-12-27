@@ -88,6 +88,8 @@ paths:
       summary: Create a new note
       tags:
         - notes
+      consumes:
+        - application/json
       operationId: postNotes
       parameters:
         - in: body
