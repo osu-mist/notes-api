@@ -6,7 +6,7 @@ const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
-const { readJSONFile, writeJSONFile } = appRoot.require('/utils/fs-operations');
+const { readJSONFile, writeJSONFile, deleteFile } = appRoot.require('/utils/fs-operations');
 
 const { dbDirectoryPath } = config.api;
 if (!fs.existsSync(dbDirectoryPath)) {
@@ -217,15 +217,9 @@ const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
 
 const deleteNoteByID = noteID => new Promise((resolve, reject) => {
   try {
-    const rawNote = fetchNote(noteID);
-    if (!rawNote) {
-      resolve(null);
-    }
-
-    const studentID = noteID.split('-')[0];
+    const studentID = parseStudentID(noteID);
     const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-    fs.unlinkSync(noteFilePath);
-    resolve(true);
+    resolve(deleteFile(noteFilePath));
   } catch (err) {
     reject(err);
   }
