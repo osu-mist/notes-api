@@ -6,6 +6,9 @@ const notesDAO = require('../../db/json/notes-dao');
 
 const notFoundMessage = 'A note with the specified noteID was not found.';
 
+/**
+ * @summary Patch note by ID
+ */
 const patch = async (req, res) => {
   try {
     const { id } = req.params;
