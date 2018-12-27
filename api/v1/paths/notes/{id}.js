@@ -20,6 +20,9 @@ const get = async (req, res) => {
   }
 };
 
+/**
+ * @summary Patch note by ID
+ */
 const patch = async (req, res) => {
   try {
     const { id } = req.params;

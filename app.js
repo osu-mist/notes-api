@@ -24,8 +24,6 @@ const appRouter = express.Router();
 const adminApp = express();
 const adminAppRouter = express.Router();
 
-app.use(bodyParser.json());
-
 /**
  * @summary Use the simple query parser to prevent the parameters which contain square brackets
  * be parsed as a nested object
@@ -83,6 +81,9 @@ initialize({
   app: appRouter,
   apiDoc: openapi,
   paths: `${appRoot}/api/v1/paths`,
+  consumesMiddleware: {
+    'application/json': bodyParser.json(),
+  },
   errorMiddleware,
   errorTransformer: (openapiError, ajvError) => Object.assign({}, openapiError, ajvError),
 });
