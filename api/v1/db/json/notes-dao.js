@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const appRoot = require('app-root-path');
 const fs = require('fs');
+const moment = require('moment');
 const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
@@ -174,7 +175,7 @@ const postNotes = body => new Promise((resolve, reject) => {
       permissions,
       context,
     };
-    newNote.dateCreated = new Date().toISOString();
+    newNote.dateCreated = moment().toISOString();
     newNote.lastModified = newNote.dateCreated;
 
     const noteFilePath = `${studentDir}/${noteID}.json`;
