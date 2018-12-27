@@ -11,4 +11,12 @@ const writeJSONFile = (filePath, data, options = {}) => {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), options);
 };
 
-module.exports = { readJSONFile, writeJSONFile };
+const deleteFile = (filePath) => {
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+    return true;
+  }
+  return false;
+};
+
+module.exports = { readJSONFile, writeJSONFile, deleteFile };
