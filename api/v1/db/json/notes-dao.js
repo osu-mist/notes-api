@@ -2,6 +2,7 @@ const _ = require('lodash');
 const appRoot = require('app-root-path');
 const fs = require('fs');
 const moment = require('moment');
+const path = require('path');
 const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
@@ -27,8 +28,10 @@ const filterNotes = (rawNotes, queryParams) => {
   const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
 
   const {
-    q, sources, sortKey, contextTypes,
+    creatorID, q, sources, sortKey, contextTypes,
   } = queryParams;
+
+  rawNotes = creatorID ? _.filter(rawNotes, it => it.creatorID === creatorID) : rawNotes;
 
   rawNotes = contextTypes
     ? _.filter(rawNotes, it => _.includes(contextTypes, getContextType(it)))
@@ -54,14 +57,10 @@ const getNotes = query => new Promise((resolve, reject) => {
   try {
     const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    let noteFiles;
-    let rawNotes = [];
-    try {
-      noteFiles = fs.readdirSync(studentDirPath);
-    } catch (ignore) {
-      // rawNotes should remain an empty array if directory does not exist
-    }
+    let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
+    noteFiles = _.filter(noteFiles, it => path.extname(it).toLowerCase() === '.json');
 
+    let rawNotes = [];
     _.forEach(noteFiles, (file) => {
       rawNotes.push(readJSONFile(`${studentDirPath}/${file}`));
     });
