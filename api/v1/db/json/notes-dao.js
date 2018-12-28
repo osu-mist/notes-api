@@ -7,12 +7,13 @@ const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
-const { readJSONFile, writeJSONFile } = appRoot.require('/utils/fs-operations');
+const {
+  validateDBPath, readJSONFile, writeJSONFile, initStudentDir, getCounter, incrementCounter,
+} = appRoot.require('/utils/fs-operations');
 
 const { dbDirectoryPath } = config.api;
-if (!fs.existsSync(dbDirectoryPath)) {
-  throw new Error(`DB directory path: '${dbDirectoryPath}' is invalid`);
-}
+validateDBPath(dbDirectoryPath);
+
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
 
@@ -118,13 +119,10 @@ const postNotes = body => new Promise((resolve, reject) => {
     } : null;
 
     const studentDir = `${dbDirectoryPath}/${studentID}`;
-    const counterDir = `${studentDir}/counter.txt`;
-    if (!fs.existsSync(studentDir)) {
-      fs.mkdirSync(studentDir);
-      fs.writeFileSync(counterDir, '1\n', { flag: 'wx' });
-    }
+    const counterFilePath = `${studentDir}/counter.txt`;
+    initStudentDir(studentDir, counterFilePath);
 
-    const counter = fs.readFileSync(counterDir).toString().replace('\n', '');
+    const counter = getCounter(counterFilePath);
     const noteID = `${studentID}-${counter}`;
 
     const newNote = {
@@ -139,10 +137,8 @@ const postNotes = body => new Promise((resolve, reject) => {
     newNote.lastModified = newNote.dateCreated;
 
     const noteFilePath = `${studentDir}/${noteID}.json`;
-
     writeJSONFile(noteFilePath, newNote, { flag: 'wx' });
-    const newCounter = `${(parseInt(counter, 10) + 1).toString()}\n`;
-    fs.writeFileSync(counterDir, newCounter);
+    incrementCounter(counterFilePath);
 
     const serializedNote = getNoteByID(noteID);
     resolve(serializedNote);
