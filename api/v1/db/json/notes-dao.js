@@ -53,7 +53,8 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    const noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
+    let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
+    noteFiles = _.filter(noteFiles, it => it.split('.').pop().toLowerCase() === 'json');
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
