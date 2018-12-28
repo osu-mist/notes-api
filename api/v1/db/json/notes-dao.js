@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const fs = require('fs');
+const path = require('path');
 const config = require('config');
 
 const { serializeNotes } = require('../../serializers/notes-serializer');
@@ -54,7 +55,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
     let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
-    noteFiles = _.filter(noteFiles, it => it.split('.').pop().toLowerCase() === 'json');
+    noteFiles = _.filter(noteFiles, it => path.extname(it).toLowerCase() === '.json');
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
