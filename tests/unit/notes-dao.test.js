@@ -1,9 +1,12 @@
 const _ = require('lodash');
-const appRoot = require('app-root-path');
 const { assert } = require('chai');
-const testData = require('./test-data');
+const proxyquire = require('proxyquire');
 
-const notesDAO = appRoot.require('/api/v1/db/json/notes-dao');
+const notesDAO = proxyquire('../../api/v1/db/json/notes-dao.js', {
+  config: { api: { dbDirectoryPath: 'mockDB' } },
+});
+
+const testData = require('./test-data');
 
 describe('Test notes-dao', () => {
   describe('Test filterNotes', () => {

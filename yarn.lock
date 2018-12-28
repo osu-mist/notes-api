@@ -1482,6 +1482,14 @@ filename-regex@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/filename-regex/-/filename-regex-2.0.1.tgz#c1c4b9bee3e09725ddb106b75c1e301fe2f18b26"
 
+fill-keys@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/fill-keys/-/fill-keys-1.0.2.tgz#9a8fa36f4e8ad634e3bf6b4f3c8882551452eb20"
+  integrity sha1-mo+jb06K1jTjv2tPPIiCVRRS6yA=
+  dependencies:
+    is-object "~1.0.1"
+    merge-descriptors "~1.0.0"
+
 fill-range@^2.1.0:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-2.2.4.tgz#eb1e773abb056dcd8df2bfdf6af59b8b3a936565"
@@ -2201,6 +2209,11 @@ is-number@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-4.0.0.tgz#0026e37f5454d73e356dfe6564699867c6a7f0ff"
 
+is-object@~1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/is-object/-/is-object-1.0.1.tgz#8952688c5ec2ffd6b03ecc85e769e02903083470"
+  integrity sha1-iVJojF7C/9awPsyF52ngKQMINHA=
+
 is-path-cwd@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/is-path-cwd/-/is-path-cwd-1.0.0.tgz#d225ec23132e89edd38fda767472e62e65f1106d"
@@ -2615,7 +2628,7 @@ mem@^1.1.0:
   dependencies:
     mimic-fn "^1.0.0"
 
-merge-descriptors@1.0.1:
+merge-descriptors@1.0.1, merge-descriptors@~1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/merge-descriptors/-/merge-descriptors-1.0.1.tgz#b00aaa556dd8b44568150ec9d1b953f3f90cbb61"
 
@@ -2743,6 +2756,16 @@ mocha@^5.2.0:
     minimatch "3.0.4"
     mkdirp "0.5.1"
     supports-color "5.4.0"
+
+mock-fs@^4.7.0:
+  version "4.7.0"
+  resolved "https://registry.yarnpkg.com/mock-fs/-/mock-fs-4.7.0.tgz#9f17e219cacb8094f4010e0a8c38589e2b33c299"
+  integrity sha512-WlQNtUlzMRpvLHf8dqeUmNqfdPjGY29KrJF50Ldb4AcL+vQeR8QH3wQcFMgrhTwb1gHjZn9xggho+84tBskLgA==
+
+module-not-found-error@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/module-not-found-error/-/module-not-found-error-1.0.1.tgz#cf8b4ff4f29640674d6cdd02b0e3bc523c2bbdc0"
+  integrity sha1-z4tP9PKWQGdNbN0CsOO8UjwrvcA=
 
 moment@^2.11.2, moment@^2.22.2:
   version "2.22.2"
@@ -3416,6 +3439,15 @@ proxy-addr@~2.0.3:
     forwarded "~0.1.2"
     ipaddr.js "1.8.0"
 
+proxyquire@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/proxyquire/-/proxyquire-2.1.0.tgz#c2263a38bf0725f2ae950facc130e27510edce8d"
+  integrity sha512-kptdFArCfGRtQFv3Qwjr10lwbEV0TBJYvfqzhwucyfEXqVgmnAkyEw/S3FYzR5HI9i5QOq4rcqQjZ6AlknlCDQ==
+  dependencies:
+    fill-keys "^1.0.2"
+    module-not-found-error "^1.0.0"
+    resolve "~1.8.1"
+
 ps-tree@0.0.x:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/ps-tree/-/ps-tree-0.0.3.tgz#dbf8d752a7fe22fa7d58635689499610e9276ddc"
@@ -3671,7 +3703,7 @@ resolve-url@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/resolve-url/-/resolve-url-0.2.1.tgz#2c637fe77c893afd2a663fe21aa9080068e2052a"
 
-resolve@^1.1.6, resolve@^1.1.7, resolve@^1.4.0, resolve@^1.5.0, resolve@^1.6.0:
+resolve@^1.1.6, resolve@^1.1.7, resolve@^1.4.0, resolve@^1.5.0, resolve@^1.6.0, resolve@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.8.1.tgz#82f1ec19a423ac1fbd080b0bab06ba36e84a7a26"
   dependencies:
