@@ -108,7 +108,7 @@ const fetchNote = (noteID) => {
  *                     already exists
  */
 const writeNote = (noteID, newContents, failIfExists = false) => {
-  const options = failIfExists ? { flag: 'wx' } : {};
+  const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
   const studentID = parseStudentID(noteID);
   const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
   fs.writeFileSync(noteFilePath, JSON.stringify(newContents, null, 2), options);
