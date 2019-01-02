@@ -2,16 +2,18 @@ const _ = require('lodash');
 const appRoot = require('app-root-path');
 const fs = require('fs');
 const moment = require('moment');
+const path = require('path');
 const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
-const { readJSONFile, writeJSONFile } = appRoot.require('/utils/fs-operations');
+const {
+  validateDBPath, readJSONFile, writeJSONFile, initStudentDir, getCounter, incrementCounter,
+} = appRoot.require('/utils/fs-operations');
 
 const { dbDirectoryPath } = config.api;
-if (!fs.existsSync(dbDirectoryPath)) {
-  throw new Error(`DB directory path: '${dbDirectoryPath}' is invalid`);
-}
+validateDBPath(dbDirectoryPath);
+
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
 
@@ -35,8 +37,10 @@ const filterNotes = (rawNotes, queryParams) => {
   const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
 
   const {
-    q, sources, sortKey, contextTypes,
+    creatorID, q, sources, sortKey, contextTypes,
   } = queryParams;
+
+  rawNotes = creatorID ? _.filter(rawNotes, it => it.creatorID === creatorID) : rawNotes;
 
   rawNotes = contextTypes
     ? _.filter(rawNotes, it => _.includes(contextTypes, getContextType(it)))
@@ -62,14 +66,10 @@ const getNotes = query => new Promise((resolve, reject) => {
   try {
     const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    let noteFiles;
-    let rawNotes = [];
-    try {
-      noteFiles = fs.readdirSync(studentDirPath);
-    } catch (ignore) {
-      // rawNotes should remain an empty array if directory does not exist
-    }
+    let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
+    noteFiles = _.filter(noteFiles, it => path.extname(it).toLowerCase() === '.json');
 
+    let rawNotes = [];
     _.forEach(noteFiles, (file) => {
       rawNotes.push(readJSONFile(`${studentDirPath}/${file}`));
     });
@@ -155,13 +155,10 @@ const postNotes = body => new Promise((resolve, reject) => {
     } : null;
 
     const studentDir = `${dbDirectoryPath}/${studentID}`;
-    const counterDir = `${studentDir}/counter.txt`;
-    if (!fs.existsSync(studentDir)) {
-      fs.mkdirSync(studentDir);
-      fs.writeFileSync(counterDir, '1\n', { flag: 'wx' });
-    }
+    const counterFilePath = `${studentDir}/counter.txt`;
+    initStudentDir(studentDir, counterFilePath);
 
-    const counter = fs.readFileSync(counterDir).toString().replace('\n', '');
+    const counter = getCounter(counterFilePath);
     const noteID = `${studentID}-${counter}`;
 
     const newNote = {
@@ -176,8 +173,7 @@ const postNotes = body => new Promise((resolve, reject) => {
     newNote.lastModified = newNote.dateCreated;
 
     writeNote(noteID, newNote, true);
-    const newCounter = `${(parseInt(counter, 10) + 1).toString()}\n`;
-    fs.writeFileSync(counterDir, newCounter);
+    incrementCounter(counterFilePath);
 
     resolve(getNoteByID(noteID));
   } catch (err) {
