@@ -25,6 +25,7 @@ const serializeNotes = (rawNotes, query) => {
     resourceKeys: noteResourceKeys,
     resourcePath: noteResourcePath,
     topLevelSelfLink,
+    keyForAttribute: string => string,
   };
 
   return new JSONAPISerializer(
@@ -46,6 +47,7 @@ const serializeNote = (rawNote) => {
     resourceKeys: noteResourceKeys,
     resourcePath: noteResourcePath,
     topLevelSelfLink,
+    keyForAttribute: string => string,
   };
 
   return new JSONAPISerializer(

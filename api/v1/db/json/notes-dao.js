@@ -7,18 +7,10 @@ const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
-const {
-  validateDBPath,
-  readJSONFile,
-  writeJSONFile,
-  initStudentDir,
-  getCounter,
-  incrementCounter,
-  deleteFile,
-} = appRoot.require('/utils/fs-operations');
+const fsOps = appRoot.require('/utils/fs-operations');
 
-const { dbDirectoryPath } = config.api;
-validateDBPath(dbDirectoryPath);
+const { dbDirectoryPath } = config.get('api');
+fsOps.validateDBPath(dbDirectoryPath);
 
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
@@ -77,7 +69,7 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
-      rawNotes.push(readJSONFile(`${studentDirPath}/${file}`));
+      rawNotes.push(fsOps.readJSONFile(`${studentDirPath}/${file}`));
     });
     _.forEach(rawNotes, (it) => { it.source = localSourceName; });
     rawNotes = filterNotes(rawNotes, query);
@@ -99,7 +91,7 @@ const fetchNote = (noteID) => {
   try {
     const studentID = parseStudentID(noteID);
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    return readJSONFile(`${studentDirPath}/${noteID}.json`);
+    return fsOps.readJSONFile(`${studentDirPath}/${noteID}.json`);
   } catch (err) {
     return null;
   }
@@ -117,7 +109,7 @@ const writeNote = (noteID, newContents, failIfExists = false) => {
   const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
   const studentID = parseStudentID(noteID);
   const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-  writeJSONFile(noteFilePath, newContents, options);
+  fsOps.writeJSONFile(noteFilePath, newContents, options);
 };
 
 /**
@@ -162,9 +154,9 @@ const postNotes = body => new Promise((resolve, reject) => {
 
     const studentDir = `${dbDirectoryPath}/${studentID}`;
     const counterFilePath = `${studentDir}/counter.txt`;
-    initStudentDir(studentDir, counterFilePath);
+    fsOps.initStudentDir(studentDir, counterFilePath);
 
-    const counter = getCounter(counterFilePath);
+    const counter = fsOps.getCounter(counterFilePath);
     const noteID = `${studentID}-${counter}`;
 
     const newNote = {
@@ -179,7 +171,7 @@ const postNotes = body => new Promise((resolve, reject) => {
     newNote.lastModified = newNote.dateCreated;
 
     writeNote(noteID, newNote, true);
-    incrementCounter(counterFilePath);
+    fsOps.incrementCounter(counterFilePath);
 
     resolve(getNoteByID(noteID));
   } catch (err) {
@@ -216,7 +208,7 @@ const deleteNoteByID = noteID => new Promise((resolve, reject) => {
   try {
     const studentID = parseStudentID(noteID);
     const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-    resolve(deleteFile(noteFilePath));
+    resolve(fsOps.deleteFile(noteFilePath));
   } catch (err) {
     reject(err);
   }
