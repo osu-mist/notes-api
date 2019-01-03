@@ -54,5 +54,11 @@
       ["term"],
       ["course", "term"]
     ]
+  },
+  "validPostBody": {
+    "note": "testNote",
+    "studentID": "000000000",
+    "creatorID": "999999999",
+    "context": "null"
   }
 }

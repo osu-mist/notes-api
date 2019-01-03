@@ -139,7 +139,7 @@ const getNoteByID = noteID => new Promise((resolve, reject) => {
  * @param body
  * @returns {Promise} Promise object representing the new note
  */
-const postNotes = body => new Promise((resolve, reject) => {
+const postNote = body => new Promise((resolve, reject) => {
   try {
     const {
       note, studentID, creatorID,
@@ -215,5 +215,5 @@ const deleteNoteByID = noteID => new Promise((resolve, reject) => {
 });
 
 module.exports = {
-  getNotes, postNotes, getNoteByID, patchNoteByID, deleteNoteByID, filterNotes,
+  getNotes, postNote, getNoteByID, patchNoteByID, deleteNoteByID, filterNotes,
 };
