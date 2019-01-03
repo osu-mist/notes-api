@@ -21,7 +21,7 @@ const get = async (req, res) => {
  */
 const post = async (req, res) => {
   try {
-    const result = await notesDAO.postNotes(req.body);
+    const result = await notesDAO.postNote(req.body);
     return res.status(201).send(result);
   } catch (err) {
     return errorHandler(res, err);
