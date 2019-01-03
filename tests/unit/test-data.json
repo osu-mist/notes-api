@@ -1,4 +1,13 @@
 {
+  "mockConfig": {
+    "server": {
+      "protocol": "https",
+      "hostname": "localhost"
+    },
+    "api": {
+      "dbDirectoryPath": null
+    }
+  },
   "validNotes": [
     {
       "id": "111111111-1",
