@@ -4,9 +4,14 @@ const _ = require('lodash');
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 
 /**
- * @summary The middleware for handling errors
+ * @summary The middleware for handling openapi errors
  */
-const errorMiddleware = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+const openAPIErrorMiddleware = (err, req, res, next) => {
+  // call the next middleware function if the error is not an openapi error
+  if (!_.has(err, 'errors') || !_.every(err.errors, it => _.includes(it.errorCode, 'openapi'))) {
+    next(err);
+  }
+
   const { status, errors } = err;
 
   /**
@@ -46,4 +51,4 @@ const errorMiddleware = (err, req, res, next) => { // eslint-disable-line no-unu
   }
 };
 
-module.exports = { errorMiddleware };
+module.exports = { openAPIErrorMiddleware };

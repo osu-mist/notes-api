@@ -25,7 +25,7 @@
     "app-root-path": "^2.1.0",
     "body-parser": "^1.18.3",
     "capitalize": "^2.0.0",
-    "chai-exclude": "^1.0.12",
+    "compose-middleware": "^5.0.1",
     "config": "^2.0.1",
     "deasync": "^0.1.14",
     "decamelize": "^2.0.0",

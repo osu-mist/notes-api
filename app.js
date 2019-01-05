@@ -1,6 +1,6 @@
 const appRoot = require('app-root-path');
 const bodyParser = require('body-parser');
-const { compose } = require('compose-middleware');
+const { compose, errors } = require('compose-middleware');
 const config = require('config');
 const express = require('express');
 const { initialize } = require('express-openapi');
@@ -8,13 +8,12 @@ const fs = require('fs');
 const https = require('https');
 const moment = require('moment');
 const git = require('simple-git/promise');
-const bodyParser = require('body-parser');
 
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { authentication } = appRoot.require('middlewares/authentication');
-const { bodyParserError } = appRoot.require('middlewares/body-parser-error');
+const { genericErrorMiddleware } = appRoot.require('middlewares/generic-error-middleware');
 const { logger } = appRoot.require('middlewares/logger');
-const { runtimeErrors } = appRoot.require('middlewares/runtime-errors');
+const { openAPIErrorMiddleware } = appRoot.require('middlewares/openapi-error-middleware');
 const { openapi } = appRoot.require('utils/load-openapi');
 const { validateDataSource } = appRoot.require('utils/validate-data-source');
 
@@ -100,6 +99,17 @@ adminAppRouter.get(`${openapi.basePath}`, async (req, res) => {
 });
 
 /**
+ * @summary Middleware that improves the error message when failing to parse JSON
+ */
+const bodyParserErrorHandler = (err, req, res, next) => {
+  if (err instanceof SyntaxError) {
+    err.customStatus = 400;
+    err.customMessage = `Error parsing JSON: ${err}`;
+  }
+  next(err);
+};
+
+/**
  * @summary Initialize API with OpenAPI specification
  */
 initialize({
@@ -107,9 +117,9 @@ initialize({
   apiDoc: openapi,
   paths: `${appRoot}/api/v1/paths`,
   consumesMiddleware: {
-    'application/json': bodyParser.json(),
+    'application/json': compose([bodyParser.json(), bodyParserErrorHandler]),
   },
-  errorMiddleware,
+  errorMiddleware: errors([openAPIErrorMiddleware, genericErrorMiddleware]),
   errorTransformer: (openapiError, ajvError) => Object.assign({}, openapiError, ajvError),
 });
 
