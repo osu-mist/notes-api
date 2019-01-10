@@ -1,6 +1,6 @@
 const appRoot = require('app-root-path');
 const bodyParser = require('body-parser');
-const { compose, errors } = require('compose-middleware');
+const { compose } = require('compose-middleware');
 const config = require('config');
 const express = require('express');
 const { initialize } = require('express-openapi');
@@ -11,9 +11,8 @@ const git = require('simple-git/promise');
 
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { authentication } = appRoot.require('middlewares/authentication');
-const { genericErrorMiddleware } = appRoot.require('middlewares/generic-error-middleware');
+const { errorMiddleware } = appRoot.require('middlewares/error-middleware');
 const { logger } = appRoot.require('middlewares/logger');
-const { openAPIErrorMiddleware } = appRoot.require('middlewares/openapi-error-middleware');
 const { openapi } = appRoot.require('utils/load-openapi');
 const { validateDataSource } = appRoot.require('utils/validate-data-source');
 
@@ -110,6 +109,24 @@ const bodyParserErrorHandler = (err, req, res, next) => {
 };
 
 /**
+ * @summary Function that handles transforming openapi errors
+ */
+const errorTransformer = (openapiError, ajvError) => {
+  /**
+   * express-openapi will add a leading '[' and closing ']' to the 'path' field if the parameter
+   * name contains '[' or ']'. This regex is used to remove them to keep the path name consistent.
+   * @type {RegExp}
+   */
+  const pathQueryRegex = /\['(.*)']/g;
+
+  const error = Object.assign({}, openapiError, ajvError);
+
+  const regexResult = pathQueryRegex.exec(error.path);
+  error.path = regexResult ? regexResult[1] : error.path;
+  return error;
+};
+
+/**
  * @summary Initialize API with OpenAPI specification
  */
 initialize({
@@ -119,8 +136,8 @@ initialize({
   consumesMiddleware: {
     'application/json': compose([bodyParser.json(), bodyParserErrorHandler]),
   },
-  errorMiddleware: errors([openAPIErrorMiddleware, genericErrorMiddleware]),
-  errorTransformer: (openapiError, ajvError) => Object.assign({}, openapiError, ajvError),
+  errorMiddleware,
+  errorTransformer,
 });
 
 /**

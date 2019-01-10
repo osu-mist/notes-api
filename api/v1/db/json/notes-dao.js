@@ -1,18 +1,19 @@
-const _ = require('lodash');
 const appRoot = require('app-root-path');
-const fs = require('fs');
-const path = require('path');
 const config = require('config');
+const fs = require('fs');
+const _ = require('lodash');
+const moment = require('moment');
+const path = require('path');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
 const fsOps = appRoot.require('utils/fs-operations');
 
-const { dbDirectoryPath } = config.get('api');
-fsOps.validateDBPath(dbDirectoryPath);
-
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
+
+const { dbDirectoryPath } = config.get('api');
+validateDBPath(dbDirectoryPath);
 
 /**
  * @summary Parses studentID from noteID
@@ -68,9 +69,10 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
-      rawNotes.push(fsOps.readJSONFile(`${studentDirPath}/${file}`));
+      const rawNote = readJSONFile(`${studentDirPath}/${file}`);
+      rawNotes.source = localSourceName;
+      rawNotes.push(rawNote);
     });
-    _.forEach(rawNotes, (it) => { it.source = localSourceName; });
     rawNotes = filterNotes(rawNotes, query);
 
     const serializedNotes = serializeNotes(rawNotes, query);
