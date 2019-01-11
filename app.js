@@ -8,13 +8,12 @@ const fs = require('fs');
 const https = require('https');
 const moment = require('moment');
 const git = require('simple-git/promise');
+const SwaggerParser = require('swagger-parser');
 
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { authentication } = appRoot.require('middlewares/authentication');
 const { errorMiddleware } = appRoot.require('middlewares/error-middleware');
 const { logger } = appRoot.require('middlewares/logger');
-const { openapi } = appRoot.require('utils/load-openapi');
-const { validateDataSource } = appRoot.require('utils/validate-data-source');
 
 const serverConfig = config.get('server');
 
@@ -57,47 +56,6 @@ appRouter.use(authentication);
 adminAppRouter.use(authentication);
 
 /**
- * @summary Function that handles transforming openapi errors
- * @function
- */
-const errorTransformer = (openapiError, ajvError) => {
-  /**
-   * express-openapi will add a leading '[' and closing ']' to the 'path' field if the parameter
-   * name contains '[' or ']'. This regex is used to remove them to keep the path name consistent.
-   * @type {RegExp}
-   */
-  const pathQueryRegex = /\['(.*)']/g;
-
-  const error = Object.assign({}, openapiError, ajvError);
-
-  const regexResult = pathQueryRegex.exec(error.path);
-  error.path = regexResult ? regexResult[1] : error.path;
-  return error;
-};
-
-/**
- * @summary Return API meta information at admin endpoint
- */
-adminAppRouter.get(`${openapi.basePath}`, async (req, res) => {
-  try {
-    const commit = await git().revparse(['--short', 'HEAD']);
-    const now = moment();
-    const info = {
-      meta: {
-        name: openapi.info.title,
-        time: now.format('YYYY-MM-DD HH:mm:ssZZ'),
-        unixTime: now.unix(),
-        commit: commit.trim(),
-        documentation: 'openapi.yaml',
-      },
-    };
-    res.send(info);
-  } catch (err) {
-    errorHandler(res, err);
-  }
-});
-
-/**
  * @summary Middleware that improves the error message when failing to parse JSON
  */
 const bodyParserErrorHandler = (err, req, res, next) => {
@@ -126,27 +84,57 @@ const errorTransformer = (openapiError, ajvError) => {
   return error;
 };
 
-/**
- * @summary Initialize API with OpenAPI specification
- */
-initialize({
-  app: appRouter,
-  apiDoc: openapi,
-  paths: `${appRoot}/api/v1/paths`,
-  consumesMiddleware: {
-    'application/json': compose([bodyParser.json(), bodyParserErrorHandler]),
-  },
-  errorMiddleware,
-  errorTransformer,
-});
+const startup = async () => {
+  await SwaggerParser.validate('openapi.yaml').then((openapi) => {
+    app.locals.openapi = openapi;
+  });
+  /**
+   * @summary Return API meta information at admin endpoint
+   */
+  adminAppRouter.get(`${app.locals.openapi.basePath}`, async (req, res) => {
+    try {
+      const commit = await git().revparse(['--short', 'HEAD']);
+      const now = moment();
+      const info = {
+        meta: {
+          name: app.locals.openapi.info.title,
+          time: now.format('YYYY-MM-DD HH:mm:ssZZ'),
+          unixTime: now.unix(),
+          commit: commit.trim(),
+          documentation: 'openapi.yaml',
+        },
+      };
+      res.send(info);
+    } catch (err) {
+      errorHandler(res, err);
+    }
+  });
+  /**
+   * @summary Initialize API with OpenAPI specification
+   */
+  initialize({
+    app: appRouter,
+    apiDoc: app.locals.openapi,
+    paths: `${appRoot}/api/v1/paths`,
+    consumesMiddleware: {
+      'application/json': compose([bodyParser.json(), bodyParserErrorHandler]),
+    },
+    errorMiddleware,
+    errorTransformer,
+  });
 
-/**
- * @summary Return a 404 error if resource not found
- */
-appRouter.use((req, res) => errorBuilder(res, 404, 'Resource not found.'));
+  /**
+   * @summary Return a 404 error if resource not found
+   */
+  appRouter.use((req, res) => errorBuilder(res, 404, 'Resource not found.'));
 
-/**
- * @summary Start servers and listen on ports
- */
-httpsServer.listen(serverConfig.port);
-adminHttpsServer.listen(serverConfig.adminPort);
+  /**
+   * @summary Start servers and listen on ports
+   */
+  httpsServer.listen(serverConfig.port);
+  adminHttpsServer.listen(serverConfig.adminPort);
+};
+
+startup();
+
+module.exports = { locals: app.locals };

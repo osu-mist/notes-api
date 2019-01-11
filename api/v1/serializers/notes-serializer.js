@@ -2,8 +2,8 @@ const appRoot = require('app-root-path');
 const _ = require('lodash');
 const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 
+const { openapi } = appRoot.require('app').locals;
 const { serializerOptions } = appRoot.require('utils/jsonapi');
-const { openapi } = appRoot.require('utils/load-openapi');
 const { querySelfLink, idSelfLink } = appRoot.require('utils/uri-builder');
 
 const noteResourceProp = openapi.definitions.NoteResource.properties;
