@@ -9,7 +9,7 @@ const { serializeNotes, serializeNote } = require('../../serializers/notes-seria
 
 const {
   validateDBPath, readJSONFile, writeJSONFile, initStudentDir, getCounter, incrementCounter,
-} = appRoot.require('/utils/fs-operations');
+} = appRoot.require('utils/fs-operations');
 
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
