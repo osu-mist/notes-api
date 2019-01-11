@@ -251,6 +251,11 @@ definitions:
               - note
               - studentID
               - creatorID
+        required:
+          - type
+          - attributes
+    required:
+      - data
   SelfLink:
     properties:
       self:

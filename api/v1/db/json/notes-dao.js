@@ -108,15 +108,16 @@ const getNoteByID = noteID => new Promise((resolve, reject) => {
  */
 const postNotes = body => new Promise((resolve, reject) => {
   try {
+    const { attributes } = body.data;
     const {
       note, studentID, creatorID,
-    } = body;
+    } = attributes;
 
     // express-openapi does not correctly handle this default value so it must be specified manually
-    const permissions = body.permissions || 'advisor';
+    const permissions = attributes.permissions || 'advisor';
     // ignore additional fields in context
-    const context = body.context ? {
-      contextType: body.context.contextType, contextID: body.context.contextID,
+    const context = attributes.context ? {
+      contextType: attributes.context.contextType, contextID: body.context.contextID,
     } : null;
 
     const studentDir = `${dbDirectoryPath}/${studentID}`;
