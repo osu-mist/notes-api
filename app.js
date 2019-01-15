@@ -84,6 +84,9 @@ const errorTransformer = (openapiError, ajvError) => {
   return error;
 };
 
+/**
+ * @summary Handles general startup for the app
+ */
 const startup = async () => {
   await SwaggerParser.validate('openapi.yaml').then((openapi) => {
     app.locals.openapi = openapi;
