@@ -11,6 +11,9 @@ const noteResourceType = noteResourceProp.type.enum[0];
 const noteResourceKeys = _.keys(noteResourceProp.attributes.properties);
 const noteResourcePath = 'notes';
 
+// Preserve the string format between the database and the serialized object during serialization
+const keyForAttribute = string => string;
+
 /**
  * @summary Serialize noteResources to JSON API
  * @function
@@ -25,7 +28,7 @@ const serializeNotes = (rawNotes, query) => {
     resourceKeys: noteResourceKeys,
     resourcePath: noteResourcePath,
     topLevelSelfLink,
-    keyForAttribute: string => string,
+    keyForAttribute,
   };
 
   return new JSONAPISerializer(
@@ -47,7 +50,7 @@ const serializeNote = (rawNote) => {
     resourceKeys: noteResourceKeys,
     resourcePath: noteResourcePath,
     topLevelSelfLink,
-    keyForAttribute: string => string,
+    keyForAttribute,
   };
 
   return new JSONAPISerializer(
