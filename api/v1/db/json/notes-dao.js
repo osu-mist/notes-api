@@ -156,7 +156,7 @@ const postNote = body => new Promise((resolve, reject) => {
     const permissions = attributes.permissions || 'advisor';
     // ignore additional fields in context
     const context = attributes.context ? {
-      contextType: attributes.context.contextType, contextID: body.context.contextID,
+      contextType: attributes.context.contextType, contextID: attributes.context.contextID,
     } : null;
 
     const studentDir = `${dbDirectoryPath}/${studentID}`;
