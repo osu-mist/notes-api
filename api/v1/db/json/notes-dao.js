@@ -89,7 +89,7 @@ const getNoteByID = noteID => new Promise((resolve, reject) => {
 
     const rawNote = readJSONFile(`${studentDirPath}/${noteID}.json`);
     if (!rawNote) {
-      resolve(null);
+      resolve(undefined);
     }
     rawNote.source = localSourceName;
 
