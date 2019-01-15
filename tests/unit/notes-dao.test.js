@@ -61,6 +61,7 @@ describe('Test notes-dao', () => {
       });
     });
   });
+
   describe('Test getNotes', () => {
     it('no optional parameters', async () => {
       sinon.replace(fs, 'existsSync', () => true);
@@ -72,6 +73,15 @@ describe('Test notes-dao', () => {
       assert.deepEqualExcluding(result.data[0].attributes, testData.validNotes[0], ['id']);
     });
   });
+
+  describe('Test getNoteByID', () => {
+    it('valid ID', async () => {
+      sinon.replace(fsOps, 'readJSONFile', () => testData.validNotes[0]);
+      const result = await notesDAO.getNoteByID('000000000');
+      assert.deepEqualExcluding(result.data.attributes, testData.validNotes[0], ['id']);
+    });
+  });
+
   describe('Test postNote', () => {
     it('valid object', async () => {
       _.forEach(['writeJSONFile', 'initStudentDir', 'incrementCounter'], (it) => {
@@ -87,6 +97,7 @@ describe('Test notes-dao', () => {
       validateLink(result.data.links.self, '/000000000');
     });
   });
+
   describe('Test patchNoteByID', () => {
     it('valid object, valid ID', async () => {
       sinon.replace(fsOps, 'writeJSONFile', () => null);
@@ -99,6 +110,7 @@ describe('Test notes-dao', () => {
       });
     });
   });
+
   describe('Test deleteNoteByID', () => {
     it('valid ID', async () => {
       sinon.replace(fsOps, 'deleteFile', () => true);
