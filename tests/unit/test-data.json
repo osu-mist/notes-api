@@ -69,5 +69,9 @@
     "studentID": "000000000",
     "creatorID": "999999999",
     "context": "null"
+  },
+  "validPatchBody": {
+    "note": "updatedTestNote",
+    "permissions": "student"
   }
 }

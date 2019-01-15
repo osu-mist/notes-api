@@ -1,20 +1,21 @@
-const _ = require('lodash');
 const appRoot = require('app-root-path');
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
-const fs = require('fs');
-const sinon = require('sinon');
 const config = require('config');
+const fs = require('fs');
+const _ = require('lodash');
+const sinon = require('sinon');
 
 const testData = require('./test-data');
 
-const fsOps = appRoot.require('/utils/fs-operations');
+const fsOps = appRoot.require('utils/fs-operations');
 
 chai.use(chaiExclude);
 const { assert } = chai;
+
 sinon.replace(fsOps, 'validateDBPath', () => null);
 sinon.replace(config, 'get', property => testData.mockConfig[property]);
-const notesDAO = appRoot.require('/api/v1/db/json/notes-dao');
+const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
 
 /**
  * @summary Validate the contents of a link
@@ -73,19 +74,36 @@ describe('Test notes-dao', () => {
   });
   describe('Test postNote', () => {
     it('valid object', async () => {
-      sinon.replace(fsOps, 'writeJSONFile', () => null);
-      sinon.replace(fsOps, 'initStudentDir', () => null);
+      _.forEach(['writeJSONFile', 'initStudentDir', 'incrementCounter'], (it) => {
+        sinon.replace(fsOps, it, () => null);
+      });
       sinon.replace(fsOps, 'getCounter', () => '0');
-      sinon.replace(fsOps, 'incrementCounter', () => null);
       sinon.replace(
-        fsOps,
-        'readJSONFile',
-        () => Object.assign({ id: '000000000' }, testData.validPostBody),
+        fsOps, 'readJSONFile', () => Object.assign({ id: '000000000' }, testData.validPostBody),
       );
       const result = await notesDAO.postNote(testData.validPostBody);
       assert.deepEqualExcluding(result.data.attributes, testData.validPostBody, ['source']);
       validateLink(result.links.self, '/000000000');
       validateLink(result.data.links.self, '/000000000');
+    });
+  });
+  describe('Test patchNoteByID', () => {
+    it('valid object, valid ID', async () => {
+      sinon.replace(fsOps, 'writeJSONFile', () => null);
+      sinon.replace(
+        fsOps, 'readJSONFile', () => Object.assign({ id: '000000000' }, testData.validPatchBody),
+      );
+      const result = await notesDAO.patchNoteByID('000000000', testData.validPatchBody);
+      _.forEach(['note', 'permissions'], (it) => {
+        assert.equal(result.data.attributes[it], testData.validPatchBody[it]);
+      });
+    });
+  });
+  describe('Test deleteNoteByID', () => {
+    it('valid ID', async () => {
+      sinon.replace(fsOps, 'deleteFile', () => true);
+      const result = await notesDAO.deleteNoteByID('000000000');
+      assert.equal(result, true);
     });
   });
 });
