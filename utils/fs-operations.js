@@ -58,12 +58,13 @@ const initStudentDir = (studentDirPath, counterFilePath) => {
  */
 const getCounter = (counterFilePath) => {
   // contents of counter file should be only digits followed by a newline
-  const counterRegExp = /^\d+$/;
-  const contents = fs.readFileSync(counterFilePath).toString().replace('\n', '');
-  if (!counterRegExp.test(contents)) {
+  const counterRegExp = /^(\d+)(\n)$/;
+  const contents = fs.readFileSync(counterFilePath).toString();
+  const match = counterRegExp.exec(contents);
+  if (!match) {
     throw new Error(`Counter file: ${counterFilePath} contents: ${contents} are invalid`);
   } else {
-    return contents;
+    return match[1];
   }
 };
 

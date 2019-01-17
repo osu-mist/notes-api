@@ -139,6 +139,7 @@ paths:
                 $ref: '#/definitions/note'
               permissions:
                 $ref: '#/definitions/permissions'
+            additionalProperties: false
       responses:
         200:
           description: Successfully updated the note
@@ -251,11 +252,14 @@ definitions:
               - note
               - studentID
               - creatorID
+            additionalProperties: false
         required:
           - type
           - attributes
+        additionalProperties: false
     required:
       - data
+    additionalProperties: false
   SelfLink:
     properties:
       self:
