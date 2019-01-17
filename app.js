@@ -90,6 +90,9 @@ const errorTransformer = (openapiError, ajvError) => {
 const startup = async () => {
   await SwaggerParser.validate('openapi.yaml').then((openapi) => {
     app.locals.openapi = openapi;
+  }).catch((err) => {
+    console.error(`Error parsing openapi.yaml: ${err}`);
+    process.exit(1);
   });
   /**
    * @summary Return API meta information at admin endpoint
