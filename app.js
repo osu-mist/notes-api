@@ -55,6 +55,7 @@ adminAppRouter.use(authentication);
 
 /**
  * @summary Middleware that improves the error message when failing to parse JSON
+ * @function
  */
 const bodyParserErrorHandler = (err, req, res, next) => {
   if (err instanceof SyntaxError) {
@@ -66,6 +67,7 @@ const bodyParserErrorHandler = (err, req, res, next) => {
 
 /**
  * @summary Function that handles transforming openapi errors
+ * @function
  */
 const errorTransformer = (openapiError, ajvError) => {
   /**
@@ -84,14 +86,20 @@ const errorTransformer = (openapiError, ajvError) => {
 
 /**
  * @summary Handles general startup for the app
+ * @function
  */
 const startup = async () => {
+  /**
+   * @summary Validate and parse openapi document. Store the openapi object in
+   * app.locals.openapi for use by other modules.
+   */
   await SwaggerParser.validate('openapi.yaml').then((openapi) => {
     app.locals.openapi = openapi;
   }).catch((err) => {
     console.error(`Error parsing openapi.yaml: ${err}`);
     process.exit(1);
   });
+
   /**
    * @summary Return API meta information at admin endpoint
    */
@@ -113,6 +121,7 @@ const startup = async () => {
       errorHandler(res, err);
     }
   });
+
   /**
    * @summary Initialize API with OpenAPI specification
    */
