@@ -68,6 +68,14 @@ const incrementCounter = (counterFilePath) => {
   fs.writeFileSync(counterFilePath, newCounter);
 };
 
+const deleteFile = (filePath) => {
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+    return true;
+  }
+  return undefined;
+};
+
 module.exports = {
   validateDBPath, readJSONFile, writeJSONFile, initStudentDir, getCounter, incrementCounter,
 };
