@@ -1,19 +1,20 @@
 const appRoot = require('app-root-path');
 
-const petsDAO = require('../../db/json/notes-dao');
+const notesDAO = require('../../db/json/notes-dao');
 
-const { paths } = appRoot.require('app').locals.openapi;
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
+const { openapi: { paths } } = appRoot.require('utils/load-openapi');
 
 /**
- * @summary Get pet by unique ID
+ * @summary Patch note by ID
  */
-const get = async (req, res) => {
+const patch = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await petsDAO.getPetById(id);
-    if (!result) {
-      errorBuilder(res, 404, 'A pet with the specified ID was not found.');
+    const { body } = req;
+    const result = await notesDAO.patchNoteByID(id, body);
+    if (result === undefined) {
+      errorBuilder(res, 404, 'A note with the specified noteID was not found.');
     } else {
       res.send(result);
     }
@@ -22,6 +23,6 @@ const get = async (req, res) => {
   }
 };
 
-get.apiDoc = paths['/notes/{noteID}'].get;
+patch.apiDoc = paths['/notes/{noteID}'].patch;
 
-module.exports = { get };
+module.exports = { patch };

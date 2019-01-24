@@ -18,6 +18,14 @@ const { dbDirectoryPath } = config.get('api');
 validateDBPath(dbDirectoryPath);
 
 /**
+ * @summary Parses studentID from noteID
+ * @function
+ * @param noteID
+ * @returns {string}
+ */
+const parseStudentID = noteID => noteID.split('-')[0];
+
+/**
  * @summary Filter notes using parameters
  * @function
  * @param {Object[]} rawNotes The list of notes to be filtered
@@ -77,6 +85,37 @@ const getNotes = query => new Promise((resolve, reject) => {
 });
 
 /**
+ * @summary Fetch a note from the database by its noteID
+ * @function
+ * @param noteID
+ * @returns {Object} The raw note from the DB
+ */
+const fetchNote = (noteID) => {
+  try {
+    const studentID = parseStudentID(noteID);
+    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
+    return readJSONFile(`${studentDirPath}/${noteID}.json`);
+  } catch (err) {
+    return null;
+  }
+};
+
+/**
+ * @summary Write newContents to the note with id noteID
+ * @function
+ * @param noteID
+ * @param newContents
+ * @param failIfExists If true, the method will throw an error if the file
+ *                     already exists
+ */
+const writeNote = (noteID, newContents, failIfExists = false) => {
+  const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
+  const studentID = parseStudentID(noteID);
+  const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
+  writeJSONFile(noteFilePath, newContents, options);
+};
+
+/**
  * @summary Return a specific note by noteID
  * @function
  * @param {string} noteID id of the note in the form: '{studentID}-{number}'
@@ -84,10 +123,7 @@ const getNotes = query => new Promise((resolve, reject) => {
  */
 const getNoteByID = noteID => new Promise((resolve, reject) => {
   try {
-    const studentID = noteID.split('-')[0];
-    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-
-    const rawNote = readJSONFile(`${studentDirPath}/${noteID}.json`);
+    const rawNote = fetchNote(noteID);
     if (!rawNote) {
       resolve(undefined);
     }
@@ -138,15 +174,38 @@ const postNotes = body => new Promise((resolve, reject) => {
     newNote.dateCreated = moment().toISOString();
     newNote.lastModified = newNote.dateCreated;
 
-    const noteFilePath = `${studentDir}/${noteID}.json`;
-    writeJSONFile(noteFilePath, newNote, { flag: 'wx' });
+    writeNote(noteID, newNote, true);
     incrementCounter(counterFilePath);
 
-    const serializedNote = getNoteByID(noteID);
-    resolve(serializedNote);
+    resolve(getNoteByID(noteID));
   } catch (err) {
     reject(err);
   }
 });
 
-module.exports = { getNotes, postNotes };
+/**
+ * @summary Patch a note by noteID
+ * @function
+ * @param noteID
+ * @param body
+ * @returns {Promise} Promise object that represents the patched note
+ */
+const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
+  try {
+    const rawNote = fetchNote(noteID);
+    if (!rawNote) {
+      resolve(undefined);
+    }
+
+    const { note, permissions } = body;
+    rawNote.note = note || rawNote.note;
+    rawNote.permissions = permissions || rawNote.permissions;
+
+    writeNote(noteID, rawNote);
+    resolve(getNoteByID(noteID));
+  } catch (err) {
+    reject(err);
+  }
+});
+
+module.exports = { getNotes, postNotes, patchNoteByID };
