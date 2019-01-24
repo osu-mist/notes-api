@@ -218,9 +218,7 @@ const deleteNoteByID = noteID => new Promise((resolve, reject) => {
 
 module.exports = {
   getNotes,
-  postNote,
-  getNoteByID,
+  postNotes,
   patchNoteByID,
   deleteNoteByID,
-  filterNotes,
 };
