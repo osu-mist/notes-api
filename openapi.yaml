@@ -94,28 +94,14 @@ paths:
       summary: Create a new note
       tags:
         - notes
+      consumes:
+        - application/json
       operationId: postNotes
       parameters:
         - in: body
           name: requestBody
           schema:
-            type: object
-            properties:
-              note:
-                $ref: '#/definitions/note'
-              studentID:
-                $ref: '#/definitions/studentID'
-              creatorID:
-                $ref: '#/definitions/creatorID'
-              permissions:
-                $ref: '#/definitions/permissions'
-              context:
-                $ref: '#/definitions/context'
-            required:
-              - note
-              - studentID
-              - creatorID
-              - context
+            $ref: '#/definitions/NotePostBody'
       responses:
         201:
           description: Successfully created a note
@@ -153,6 +139,7 @@ paths:
                 $ref: '#/definitions/note'
               permissions:
                 $ref: '#/definitions/permissions'
+            additionalProperties: false
       responses:
         200:
           description: Successfully updated the note
@@ -205,9 +192,7 @@ definitions:
       id:
         $ref: '#/definitions/noteID'
       type:
-        type: string
-        enum:
-          - note
+        $ref: '#/definitions/noteType'
       attributes:
         type: object
         properties:
@@ -243,6 +228,38 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/NoteResource'
+  NotePostBody:
+    properties:
+      data:
+        type: object
+        properties:
+          type:
+            $ref: '#/definitions/noteType'
+          attributes:
+            type: object
+            properties:
+              note:
+                $ref: '#/definitions/note'
+              studentID:
+                $ref: '#/definitions/studentID'
+              creatorID:
+                $ref: '#/definitions/creatorID'
+              permissions:
+                $ref: '#/definitions/permissions'
+              context:
+                $ref: '#/definitions/context'
+            required:
+              - note
+              - studentID
+              - creatorID
+            additionalProperties: false
+        required:
+          - type
+          - attributes
+        additionalProperties: false
+    required:
+      - data
+    additionalProperties: false
   SelfLink:
     properties:
       self:
@@ -289,10 +306,12 @@ definitions:
     description: The contents of the note
   studentID:
     type: string
+    pattern: ^\d{9}$
     description: The 9-digit OSU ID of the student who the note is on
     example: '123456789'
   creatorID:
     type: string
+    pattern: ^\d{9}$
     description: The 9-digit OSU ID of the advisor who created the note
     example: '987654321'
   source:
@@ -309,6 +328,10 @@ definitions:
     description: "A string that defines the permissions of who can view the note. 'advisor' indicates that only
       the advisor who created the note may view it. 'advisors' indicates that all advisors can view the note.
       'student' indicates that all advisors as well as the student who the note is on may view the note."
+  noteType:
+    type: string
+    enum:
+      - note
   context:
     type: object
     properties:
@@ -320,6 +343,9 @@ definitions:
         type: string
         description: The context id of the note
         example: 'CS-101'
+    required:
+      - contextType
+      - contextID
   dateCreated:
     type: string
     format: date-time

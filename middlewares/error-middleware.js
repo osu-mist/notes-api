@@ -1,42 +1,73 @@
 const appRoot = require('app-root-path');
+const composeErrors = require('compose-middleware').errors;
 const _ = require('lodash');
 
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 
 /**
- * @summary The middleware for handling errors
+ * @summary Determines if an error is an openapi error
  */
-const errorMiddleware = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+const isOpenAPIError = err => (
+  _.has(err, 'errors') && _.every(err.errors, it => _.includes(it.errorCode, 'openapi'))
+);
+
+/**
+ * @summary The middleware for handling custom openapi errors
+ */
+const customOpenAPIErrorMiddleware = (err, req, res, next) => {
+  // call the next middleware function if the error is not an openapi error
+  if (!isOpenAPIError(err)) {
+    next(err);
+  }
+
   const { status, errors } = err;
+  const handledErrors = [];
+  const nineDigitIDs = ['studentID', 'creatorID'];
 
-  /**
-   * express-openapi will add a leading '[' and closing ']' to the 'path' field if the parameter
-   * name contains '[' or ']'. This regex is used to remove them to keep the path name consistent.
-   * @type {RegExp}
-   */
-  const pathQueryRegex = /\['(.*)']/g;
-
-  /**
-   * express-openapi validates requests based on openapi specification. For example, if we specify
-   * the maximum of page[size] is 500 in openapi.yaml, then it'll return a 400 error if page[size]
-   * is exceeded the maximum. This logic is mainly to serialize the error by adhering to JSON API.
-   */
   if (status === 400) {
     const details = [];
     _.forEach(errors, (error) => {
-      const {
-        path, errorCode, message, location,
-      } = error;
-      const regexResult = pathQueryRegex.exec(path);
-      const formattedPath = regexResult ? regexResult[1] : path;
+      const { path, errorCode } = error;
+      const isNineDigitPath = _.some(nineDigitIDs, it => _.includes(path, it));
+      if (isNineDigitPath && errorCode === 'pattern.openapi.validation') {
+        details.push(`${path} must be 9 digits`);
+        handledErrors.push(error);
+      }
+    });
+    err.errors = _.difference(err.errors, handledErrors);
+    err.details = details;
+  }
+  next(err);
+};
 
-      if (path === 'studentID' && errorCode === 'pattern.openapi.validation') {
-        details.push('studentID must be 9 digits');
-      } else if (errorCode === 'enum.openapi.validation') {
+/**
+ * @summary The middleware for handling general openapi errors
+ */
+const openAPIErrorMiddleware = (err, req, res, next) => {
+  // call the next middleware function if the error is not an openapi error
+  if (!isOpenAPIError(err)) {
+    next(err);
+  }
+
+  const { status, errors } = err;
+
+  if (status === 400) {
+    const details = err.details || [];
+    _.forEach(errors, (error) => {
+      const {
+        path,
+        errorCode,
+        message,
+        location,
+        params: { additionalProperty },
+      } = error;
+
+      if (errorCode === 'enum.openapi.validation') {
         details.push(`${path} must be one of ['${error.params.allowedValues.join("', '")}']`);
+      } else if (errorCode === 'additionalProperties.openapi.validation') {
+        details.push(`Unrecognized property '${additionalProperty}' in path: '${path}', location: '${location}'`);
       } else {
-        details.push(`Error in path: '${formattedPath}', location: ${location},`
-          + ` message: ${message}`);
+        details.push(`Error in path: '${path}', location: '${location}', message: '${message}'`);
       }
     });
     errorBuilder(res, 400, details);
@@ -44,5 +75,27 @@ const errorMiddleware = (err, req, res, next) => { // eslint-disable-line no-unu
     errorHandler(res, err);
   }
 };
+
+/**
+ * @summary The middleware for handling generic errors
+ */
+const genericErrorMiddleware = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+  const status = _.has(err, 'customStatus') ? err.customStatus : 500;
+  let detail = _.has(err, 'customMessage') ? err.customMessage : null;
+  detail = status === 400 ? [detail] : detail;
+
+  if (status === 500) {
+    if (detail) {
+      console.error(detail);
+    }
+    errorHandler(res, err);
+  } else {
+    errorBuilder(res, status, detail);
+  }
+};
+
+const errorMiddleware = composeErrors([
+  customOpenAPIErrorMiddleware, openAPIErrorMiddleware, genericErrorMiddleware,
+]);
 
 module.exports = { errorMiddleware };

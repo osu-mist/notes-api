@@ -1,8 +1,9 @@
 const appRoot = require('app-root-path');
 
-const { errorHandler } = appRoot.require('errors/errors');
-const { openapi: { paths } } = appRoot.require('utils/load-openapi');
 const notesDAO = require('../db/json/notes-dao');
+
+const { paths } = appRoot.require('app').locals.openapi;
+const { errorHandler } = appRoot.require('errors/errors');
 
 /**
  * @summary Get notes
@@ -16,6 +17,16 @@ const get = async (req, res) => {
   }
 };
 
-get.apiDoc = paths['/notes'].get;
+const post = async (req, res) => {
+  try {
+    const result = await notesDAO.postNotes(req.body);
+    return res.status(201).send(result);
+  } catch (err) {
+    return errorHandler(res, err);
+  }
+};
 
-module.exports = { get };
+get.apiDoc = paths['/notes'].get;
+post.apiDoc = paths['/notes'].post;
+
+module.exports = { get, post };

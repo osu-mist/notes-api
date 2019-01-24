@@ -1,9 +1,21 @@
-const _ = require('lodash');
-const fs = require('fs');
-const path = require('path');
+const appRoot = require('app-root-path');
 const config = require('config');
+const fs = require('fs');
+const _ = require('lodash');
+const moment = require('moment');
+const path = require('path');
 
-const { serializeNotes } = require('../../serializers/notes-serializer');
+const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
+
+const {
+  validateDBPath, readJSONFile, writeJSONFile, initStudentDir, getCounter, incrementCounter,
+} = appRoot.require('utils/fs-operations');
+
+// This is the value of the 'source' field that will be set for all notes fetched from the local DB.
+const localSourceName = 'advisorPortal';
+
+const { dbDirectoryPath } = config.get('api');
+validateDBPath(dbDirectoryPath);
 
 /**
  * @summary Filter notes using parameters
@@ -43,15 +55,7 @@ const filterNotes = (rawNotes, queryParams) => {
  * @returns {Promise} Promise object represents a list of notes
  */
 const getNotes = query => new Promise((resolve, reject) => {
-  // This is the value of the 'source' field that will be set for all notes fetched from the DB.
-  const sourceValue = 'advisorPortal';
-
   try {
-    const { dbDirectoryPath } = config.api;
-    if (!fs.existsSync(dbDirectoryPath)) {
-      reject(new Error(`DB directory path: '${dbDirectoryPath}' is invalid`));
-    }
-
     const { studentID } = query;
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
     let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
@@ -59,9 +63,10 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
-      rawNotes.push(JSON.parse(fs.readFileSync(`${studentDirPath}/${file}`, 'utf8')));
+      const rawNote = readJSONFile(`${studentDirPath}/${file}`);
+      rawNotes.source = localSourceName;
+      rawNotes.push(rawNote);
     });
-    _.forEach(rawNotes, (it) => { it.source = sourceValue; });
     rawNotes = filterNotes(rawNotes, query);
 
     const serializedNotes = serializeNotes(rawNotes, query);
@@ -72,24 +77,76 @@ const getNotes = query => new Promise((resolve, reject) => {
 });
 
 /**
- * @summary Return a specific pet by unique ID
+ * @summary Return a specific note by noteID
  * @function
- * @param {string} id Unique pet ID
- * @returns {Promise} Promise object represents a specific pet
+ * @param {string} noteID id of the note in the form: '{studentID}-{number}'
+ * @returns {Promise} Promise object represents a specific note
  */
-// const getPetById = id => new Promise((resolve, reject) => {
-//   try {
-//     const rawPets = appRoot.require('/tests/unit/mock-data.json').pets;
-//     const rawPet = _.find(rawPets, { ID: id });
-//     if (!rawPet) {
-//       resolve(undefined);
-//     } else {
-//       const serializedPet = SerializedPet(rawPet);
-//       resolve(serializedPet);
-//     }
-//   } catch (err) {
-//     reject(err);
-//   }
-// });
+const getNoteByID = noteID => new Promise((resolve, reject) => {
+  try {
+    const studentID = noteID.split('-')[0];
+    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
 
-module.exports = { getNotes };
+    const rawNote = readJSONFile(`${studentDirPath}/${noteID}.json`);
+    if (!rawNote) {
+      resolve(undefined);
+    }
+    rawNote.source = localSourceName;
+
+    const serializedNote = serializeNote(rawNote);
+    resolve(serializedNote);
+  } catch (err) {
+    reject(err);
+  }
+});
+
+/**
+ * @summary Create a new note
+ * @function
+ * @param body
+ * @returns {Promise} Promise object representing the new note
+ */
+const postNotes = body => new Promise((resolve, reject) => {
+  try {
+    const { attributes } = body.data;
+    const {
+      note, studentID, creatorID,
+    } = attributes;
+
+    // express-openapi does not correctly handle this default value so it must be specified manually
+    const permissions = attributes.permissions || 'advisor';
+    // ignore additional fields in context
+    const context = attributes.context ? {
+      contextType: attributes.context.contextType, contextID: attributes.context.contextID,
+    } : null;
+
+    const studentDir = `${dbDirectoryPath}/${studentID}`;
+    const counterFilePath = `${studentDir}/counter.txt`;
+    initStudentDir(studentDir, counterFilePath);
+
+    const counter = getCounter(counterFilePath);
+    const noteID = `${studentID}-${counter}`;
+
+    const newNote = {
+      id: noteID,
+      note,
+      studentID,
+      creatorID,
+      permissions,
+      context,
+    };
+    newNote.dateCreated = moment().toISOString();
+    newNote.lastModified = newNote.dateCreated;
+
+    const noteFilePath = `${studentDir}/${noteID}.json`;
+    writeJSONFile(noteFilePath, newNote, { flag: 'wx' });
+    incrementCounter(counterFilePath);
+
+    const serializedNote = getNoteByID(noteID);
+    resolve(serializedNote);
+  } catch (err) {
+    reject(err);
+  }
+});
+
+module.exports = { getNotes, postNotes };
