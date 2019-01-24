@@ -197,7 +197,7 @@ const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
   try {
     const rawNote = fetchNote(noteID);
     if (!rawNote) {
-      resolve(null);
+      resolve(undefined);
     }
 
     const { note, permissions } = body;

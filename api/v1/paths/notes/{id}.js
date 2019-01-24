@@ -13,8 +13,8 @@ const patch = async (req, res) => {
     const { id } = req.params;
     const { body } = req;
     const result = await notesDAO.patchNoteByID(id, body);
-    if (!result) {
-      errorBuilder(res, 404, notFoundMessage);
+    if (result === undefined) {
+      errorBuilder(res, 404, 'A note with the specified noteID was not found.');
     } else {
       res.send(result);
     }
