@@ -1,9 +1,9 @@
-const _ = require('lodash');
 const appRoot = require('app-root-path');
+const config = require('config');
 const fs = require('fs');
+const _ = require('lodash');
 const moment = require('moment');
 const path = require('path');
-const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
@@ -17,11 +17,11 @@ const {
   deleteFile,
 } = appRoot.require('/utils/fs-operations');
 
-const { dbDirectoryPath } = config.api;
-validateDBPath(dbDirectoryPath);
-
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
+
+const { dbDirectoryPath } = config.get('api');
+validateDBPath(dbDirectoryPath);
 
 /**
  * @summary Parses studentID from noteID
@@ -77,9 +77,10 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
-      rawNotes.push(readJSONFile(`${studentDirPath}/${file}`));
+      const rawNote = readJSONFile(`${studentDirPath}/${file}`);
+      rawNotes.source = localSourceName;
+      rawNotes.push(rawNote);
     });
-    _.forEach(rawNotes, (it) => { it.source = localSourceName; });
     rawNotes = filterNotes(rawNotes, query);
 
     const serializedNotes = serializeNotes(rawNotes, query);
@@ -130,7 +131,7 @@ const getNoteByID = noteID => new Promise((resolve, reject) => {
   try {
     const rawNote = fetchNote(noteID);
     if (!rawNote) {
-      resolve(null);
+      resolve(undefined);
     }
     rawNote.source = localSourceName;
 
@@ -149,15 +150,16 @@ const getNoteByID = noteID => new Promise((resolve, reject) => {
  */
 const postNotes = body => new Promise((resolve, reject) => {
   try {
+    const { attributes } = body.data;
     const {
       note, studentID, creatorID,
-    } = body;
+    } = attributes;
 
     // express-openapi does not correctly handle this default value so it must be specified manually
-    const permissions = body.permissions || 'advisor';
+    const permissions = attributes.permissions || 'advisor';
     // ignore additional fields in context
-    const context = body.context ? {
-      contextType: body.context.contextType, contextID: body.context.contextID,
+    const context = attributes.context ? {
+      contextType: attributes.context.contextType, contextID: attributes.context.contextID,
     } : null;
 
     const studentDir = `${dbDirectoryPath}/${studentID}`;
@@ -198,7 +200,7 @@ const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
   try {
     const rawNote = fetchNote(noteID);
     if (!rawNote) {
-      resolve(null);
+      resolve(undefined);
     }
 
     const { note, permissions } = body;
