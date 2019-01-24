@@ -79,6 +79,12 @@ const incrementCounter = (counterFilePath) => {
   fs.writeFileSync(counterFilePath, newCounter);
 };
 
+/**
+ * @summary Delete a file
+ * @function
+ * @param {string} filePath
+ * @returns true if file was deleted and undefined if file was not found
+ */
 const deleteFile = (filePath) => {
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
