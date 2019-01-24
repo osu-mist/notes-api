@@ -28,7 +28,7 @@ const del = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await notesDAO.deleteNoteByID(id);
-    if (!result) {
+    if (result === undefined) {
       errorBuilder(res, 404, notFoundMessage);
     } else {
       res.status(204).send();

@@ -73,7 +73,7 @@ const deleteFile = (filePath) => {
     fs.unlinkSync(filePath);
     return true;
   }
-  return false;
+  return undefined;
 };
 
 module.exports = {
