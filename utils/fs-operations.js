@@ -52,10 +52,21 @@ const initStudentDir = (studentDirPath, counterFilePath) => {
 /**
  * @summary Get the value of a counter as a string
  * @function
+ * @throws Throws an error if the counter file is invalid
  * @param {string} counterFilePath
  * @returns {string}
  */
-const getCounter = counterFilePath => fs.readFileSync(counterFilePath).toString().replace('\n', '');
+const getCounter = (counterFilePath) => {
+  // contents of counter file should be only digits followed by a newline
+  const counterRegExp = /^(\d+)\n$/;
+  const contents = fs.readFileSync(counterFilePath).toString();
+  const match = counterRegExp.exec(contents);
+  if (!match) {
+    throw new Error(`Counter file: ${counterFilePath} contents: ${contents} are invalid`);
+  } else {
+    return match[1];
+  }
+};
 
 /**
  * @summary Increment the value of a counter
