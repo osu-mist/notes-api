@@ -8,8 +8,14 @@ const path = require('path');
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
 const {
-  validateDBPath, readJSONFile, writeJSONFile, initStudentDir, getCounter, incrementCounter,
-} = appRoot.require('utils/fs-operations');
+  validateDBPath,
+  readJSONFile,
+  writeJSONFile,
+  initStudentDir,
+  getCounter,
+  incrementCounter,
+  deleteFile,
+} = appRoot.require('/utils/fs-operations');
 
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
@@ -208,4 +214,19 @@ const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
   }
 });
 
-module.exports = { getNotes, postNotes, patchNoteByID };
+const deleteNoteByID = noteID => new Promise((resolve, reject) => {
+  try {
+    const studentID = parseStudentID(noteID);
+    const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
+    resolve(deleteFile(noteFilePath));
+  } catch (err) {
+    reject(err);
+  }
+});
+
+module.exports = {
+  getNotes,
+  postNotes,
+  patchNoteByID,
+  deleteNoteByID,
+};
