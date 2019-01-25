@@ -1,8 +1,9 @@
 const appRoot = require('app-root-path');
 
-const { errorHandler } = appRoot.require('errors/errors');
-const { openapi: { paths } } = appRoot.require('utils/load-openapi');
 const notesDAO = require('../db/json/notes-dao');
+
+const { paths } = appRoot.require('app').locals.openapi;
+const { errorHandler } = appRoot.require('errors/errors');
 
 /**
  * @summary Get notes
