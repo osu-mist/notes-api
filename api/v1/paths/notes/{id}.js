@@ -7,6 +7,20 @@ const { openapi: { paths } } = appRoot.require('utils/load-openapi');
 
 const notFoundMessage = 'A note with the specified noteID was not found.';
 
+const get = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await notesDAO.getNoteByID(id);
+    if (result === undefined) {
+      errorBuilder(res, 404, notFoundMessage);
+    } else {
+      res.send(result);
+    }
+  } catch (err) {
+    errorHandler(res, err);
+  }
+};
+
 /**
  * @summary Patch note by ID
  */
@@ -39,7 +53,8 @@ const del = async (req, res) => {
   }
 };
 
+get.apiDoc = paths['/notes/{noteID}'].get;
 patch.apiDoc = paths['/notes/{noteID}'].patch;
 del.apiDoc = paths['/notes/{noteID}'].del;
 
-module.exports = { patch, del };
+module.exports = { get, patch, del };
