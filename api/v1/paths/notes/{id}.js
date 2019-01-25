@@ -10,7 +10,7 @@ const get = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await notesDAO.getNoteByID(id);
-    if (!result) {
+    if (result === undefined) {
       errorBuilder(res, 404, notFoundMessage);
     } else {
       res.send(result);

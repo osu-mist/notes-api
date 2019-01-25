@@ -130,7 +130,7 @@ const getNoteByID = noteID => new Promise((resolve, reject) => {
   try {
     const rawNote = fetchNote(noteID);
     if (!rawNote) {
-      resolve(null);
+      resolve(undefined);
     }
     rawNote.source = localSourceName;
 
