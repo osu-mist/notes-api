@@ -7,7 +7,7 @@ const config = require('config');
 
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
-const fsOps = appRoot.require('/utils/fs-operations');
+const fsOps = appRoot.require('utils/fs-operations');
 
 const { dbDirectoryPath } = config.get('api');
 fsOps.validateDBPath(dbDirectoryPath);
@@ -215,5 +215,10 @@ const deleteNoteByID = noteID => new Promise((resolve, reject) => {
 });
 
 module.exports = {
-  getNotes, postNote, getNoteByID, patchNoteByID, deleteNoteByID, filterNotes,
+  getNotes,
+  postNote,
+  getNoteByID,
+  patchNoteByID,
+  deleteNoteByID,
+  filterNotes,
 };
