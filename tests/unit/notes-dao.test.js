@@ -83,30 +83,32 @@ describe('Test notes-dao', () => {
   });
 
   describe('Test postNote', () => {
+    const testAttributes = testData.validPostBody.data.attributes;
     it('valid object', async () => {
       _.forEach(['writeJSONFile', 'initStudentDir', 'incrementCounter'], (it) => {
         sinon.replace(fsOps, it, () => null);
       });
       sinon.replace(fsOps, 'getCounter', () => '0');
       sinon.replace(
-        fsOps, 'readJSONFile', () => Object.assign({ id: '000000000' }, testData.validPostBody),
+        fsOps, 'readJSONFile', () => Object.assign({ id: '000000000' }, testAttributes),
       );
       const result = await notesDAO.postNote(testData.validPostBody);
-      assert.deepEqualExcluding(result.data.attributes, testData.validPostBody, ['source']);
+      assert.deepEqualExcluding(result.data.attributes, testAttributes, ['source']);
       validateLink(result.links.self, '/000000000');
       validateLink(result.data.links.self, '/000000000');
     });
   });
 
   describe('Test patchNoteByID', () => {
+    const testAttributes = testData.validPatchBody.data.attributes;
     it('valid object, valid ID', async () => {
       sinon.replace(fsOps, 'writeJSONFile', () => null);
       sinon.replace(
-        fsOps, 'readJSONFile', () => Object.assign({ id: '000000000' }, testData.validPatchBody),
+        fsOps, 'readJSONFile', () => Object.assign({ id: '000000000' }, testAttributes),
       );
-      const result = await notesDAO.patchNoteByID('000000000', testData.validPatchBody);
+      const result = await notesDAO.patchNoteByID('000000000', testAttributes);
       _.forEach(['note', 'permissions'], (it) => {
-        assert.equal(result.data.attributes[it], testData.validPatchBody[it]);
+        assert.equal(result.data.attributes[it], testAttributes[it]);
       });
     });
   });
