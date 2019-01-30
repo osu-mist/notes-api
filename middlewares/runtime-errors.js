@@ -19,9 +19,24 @@ const customOpenAPIError = (err, req, res, next) => {
   if (!isOpenAPIError(err)) {
     next(err);
   }
-  /**
-   * @todo Implement custom OpenAPI error rules and handlers here.
-   */
+
+  const { status, errors } = err;
+  const handledErrors = [];
+  const nineDigitIDs = ['studentID', 'creatorID'];
+
+  if (status === 400) {
+    const details = [];
+    _.forEach(errors, (error) => {
+      const { path, errorCode } = error;
+      const isNineDigitPath = _.some(nineDigitIDs, it => _.includes(path, it));
+      if (isNineDigitPath && errorCode === 'pattern.openapi.validation') {
+        details.push(`${path} must be 9 digits`);
+        handledErrors.push(error);
+      }
+    });
+    err.errors = _.difference(err.errors, handledErrors);
+    err.details = details;
+  }
   next(err);
 };
 
@@ -44,12 +59,12 @@ const openAPIError = (err, req, res, next) => {
         errorCode,
         message,
         location,
+        params: { additionalProperty },
       } = error;
 
       if (errorCode === 'enum.openapi.validation') {
         details.push(`${path} must be one of ['${error.params.allowedValues.join("', '")}']`);
       } else if (errorCode === 'additionalProperties.openapi.validation') {
-        const { additionalProperty } = error.params;
         details.push(`Unrecognized property '${additionalProperty}' in path: '${path}', location: '${location}'`);
       } else {
         details.push(`Error in path: '${path}', location: '${location}', message: '${message}'`);
@@ -79,10 +94,6 @@ const genericError = (err, req, res, next) => { // eslint-disable-line no-unused
   }
 };
 
-const runtimeErrors = composeErrors([
-  customOpenAPIError,
-  openAPIError,
-  genericError,
-]);
+const runtimeErrors = composeErrors([customOpenAPIError, openAPIError, genericError]);
 
 module.exports = { runtimeErrors };

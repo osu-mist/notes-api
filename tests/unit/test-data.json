@@ -65,13 +65,21 @@
     ]
   },
   "validPostBody": {
-    "note": "testNote",
-    "studentID": "000000000",
-    "creatorID": "999999999",
-    "context": "null"
+    "data": {
+      "attributes": {
+        "note": "testNote",
+        "studentID": "000000000",
+        "creatorID": "999999999",
+        "context": "null"
+      }
+    }
   },
   "validPatchBody": {
-    "note": "updatedTestNote",
-    "permissions": "student"
+    "data": {
+      "attributes": {
+        "note": "updatedTestNote",
+        "permissions": "student"
+      }
+    }
   }
 }

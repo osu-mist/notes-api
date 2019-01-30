@@ -8,12 +8,12 @@ const fs = require('fs');
 const https = require('https');
 const moment = require('moment');
 const git = require('simple-git/promise');
-const SwaggerParser = require('swagger-parser');
 
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { authentication } = appRoot.require('middlewares/authentication');
-const { errorMiddleware } = appRoot.require('middlewares/error-middleware');
 const { logger } = appRoot.require('middlewares/logger');
+const { runtimeErrors } = appRoot.require('middlewares/runtime-errors');
+const { openapi } = appRoot.require('utils/load-openapi');
 
 const serverConfig = config.get('server');
 
@@ -87,69 +87,48 @@ const errorTransformer = (openapiError, ajvError) => {
 };
 
 /**
- * @summary Handles general startup for the app
- * @function
+ * @summary Return API meta information at admin endpoint
  */
-const startup = async () => {
-  /**
-   * @summary Validate and parse openapi document. Store the openapi object in
-   * app.locals.openapi for use by other modules.
-   */
-  await SwaggerParser.validate('openapi.yaml').then((openapi) => {
-    app.locals.openapi = openapi;
-  }).catch((err) => {
-    console.error(`Error parsing openapi.yaml: ${err}`);
-    process.exit(1);
-  });
+adminAppRouter.get(`${openapi.basePath}`, async (req, res) => {
+  try {
+    const commit = await git().revparse(['--short', 'HEAD']);
+    const now = moment();
+    const info = {
+      meta: {
+        name: openapi.info.title,
+        time: now.format('YYYY-MM-DD HH:mm:ssZZ'),
+        unixTime: now.unix(),
+        commit: commit.trim(),
+        documentation: 'openapi.yaml',
+      },
+    };
+    res.send(info);
+  } catch (err) {
+    errorHandler(res, err);
+  }
+});
 
-  /**
-   * @summary Return API meta information at admin endpoint
-   */
-  adminAppRouter.get(`${app.locals.openapi.basePath}`, async (req, res) => {
-    try {
-      const commit = await git().revparse(['--short', 'HEAD']);
-      const now = moment();
-      const info = {
-        meta: {
-          name: app.locals.openapi.info.title,
-          time: now.format('YYYY-MM-DD HH:mm:ssZZ'),
-          unixTime: now.unix(),
-          commit: commit.trim(),
-          documentation: 'openapi.yaml',
-        },
-      };
-      res.send(info);
-    } catch (err) {
-      errorHandler(res, err);
-    }
-  });
+/**
+ * @summary Initialize API with OpenAPI specification
+ */
+initialize({
+  app: appRouter,
+  apiDoc: openapi,
+  paths: `${appRoot}/api/v1/paths`,
+  consumesMiddleware: {
+    'application/json': compose([bodyParser.json(), bodyParserErrorHandler]),
+  },
+  errorMiddleware: runtimeErrors,
+  errorTransformer,
+});
 
-  /**
-   * @summary Initialize API with OpenAPI specification
-   */
-  initialize({
-    app: appRouter,
-    apiDoc: app.locals.openapi,
-    paths: `${appRoot}/api/v1/paths`,
-    consumesMiddleware: {
-      'application/json': compose([bodyParser.json(), bodyParserErrorHandler]),
-    },
-    errorMiddleware,
-    errorTransformer,
-  });
+/**
+ * @summary Return a 404 error if resource not found
+ */
+appRouter.use((req, res) => errorBuilder(res, 404, 'Resource not found.'));
 
-  /**
-   * @summary Return a 404 error if resource not found
-   */
-  appRouter.use((req, res) => errorBuilder(res, 404, 'Resource not found.'));
-
-  /**
-   * @summary Start servers and listen on ports
-   */
-  httpsServer.listen(serverConfig.port);
-  adminHttpsServer.listen(serverConfig.adminPort);
-};
-
-startup();
-
-module.exports = { locals: app.locals };
+/**
+ * @summary Start servers and listen on ports
+ */
+httpsServer.listen(serverConfig.port);
+adminHttpsServer.listen(serverConfig.adminPort);
