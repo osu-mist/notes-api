@@ -10,8 +10,6 @@ const { serializeNotes, serializeNote } = require('../../serializers/notes-seria
 const fsOps = appRoot.require('utils/fs-operations');
 
 const { dbDirectoryPath } = config.get('api');
-fsOps.validateDBPath(dbDirectoryPath);
-
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
 
