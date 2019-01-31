@@ -2,14 +2,17 @@ const appRoot = require('app-root-path');
 const _ = require('lodash');
 const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 
-const { openapi } = appRoot.require('app').locals;
 const { serializerOptions } = appRoot.require('utils/jsonapi');
+const { openapi } = appRoot.require('utils/load-openapi');
 const { querySelfLink, idSelfLink } = appRoot.require('utils/uri-builder');
 
 const noteResourceProp = openapi.definitions.NoteResource.properties;
 const noteResourceType = noteResourceProp.type.enum[0];
 const noteResourceKeys = _.keys(noteResourceProp.attributes.properties);
 const noteResourcePath = 'notes';
+
+// Preserve the string format between the database and the serialized object during serialization
+const keyForAttribute = string => string;
 
 /**
  * @summary Serialize noteResources to JSON API
@@ -25,6 +28,7 @@ const serializeNotes = (rawNotes, query) => {
     resourceKeys: noteResourceKeys,
     resourcePath: noteResourcePath,
     topLevelSelfLink,
+    keyForAttribute,
   };
 
   return new JSONAPISerializer(
@@ -46,6 +50,7 @@ const serializeNote = (rawNote) => {
     resourceKeys: noteResourceKeys,
     resourcePath: noteResourcePath,
     topLevelSelfLink,
+    keyForAttribute,
   };
 
   return new JSONAPISerializer(

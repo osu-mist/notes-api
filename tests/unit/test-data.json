@@ -1,0 +1,85 @@
+{
+  "mockConfig": {
+    "server": {
+      "protocol": "https",
+      "hostname": "localhost"
+    },
+    "api": {
+      "dbDirectoryPath": null
+    }
+  },
+  "validNotes": [
+    {
+      "id": "111111111-1",
+      "note": "Test note 1",
+      "studentID": "111111111",
+      "creatorID": "987654321",
+      "permissions": "advisor",
+      "context": {
+        "contextType": "course",
+        "contextID": "CS-101"
+      },
+      "dateCreated": "2017-07-21T17:32:28Z",
+      "lastModified": "2017-07-21T17:32:28Z"
+    },
+    {
+      "id": "111111111-2",
+      "note": "Test note 2",
+      "studentID": "111111111",
+      "creatorID": "987654321",
+      "permissions": "advisors",
+      "context": null,
+      "dateCreated": "2018-07-21T17:32:28Z",
+      "lastModified": "2019-07-21T17:32:28Z"
+    },
+    {
+      "id": "111111111-3",
+      "note": "Test note 3",
+      "studentID": "111111111",
+      "creatorID": "987654321",
+      "permissions": "student",
+      "context": {
+        "contextType": "term",
+        "contextID": "Fall-2018"
+      },
+      "dateCreated": "2016-07-21T17:32:28Z",
+      "lastModified": "2018-07-21T17:32:28Z"
+    }
+  ],
+  "validQueryParams": {
+    "q": [
+      "Test note 1",
+      "Test note",
+      "1"
+    ],
+    "sources": [
+      ["advisorPortal"],
+      ["banner"],
+      ["degreeWorks"],
+      ["advisorPortal", "banner", "degreeWorks"]
+    ],
+    "contextTypes": [
+      ["course"],
+      ["term"],
+      ["course", "term"]
+    ]
+  },
+  "validPostBody": {
+    "data": {
+      "attributes": {
+        "note": "testNote",
+        "studentID": "000000000",
+        "creatorID": "999999999",
+        "context": "null"
+      }
+    }
+  },
+  "validPatchBody": {
+    "data": {
+      "attributes": {
+        "note": "updatedTestNote",
+        "permissions": "student"
+      }
+    }
+  }
+}

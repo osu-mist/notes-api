@@ -96,7 +96,7 @@ paths:
         - notes
       consumes:
         - application/json
-      operationId: postNotes
+      operationId: postNote
       parameters:
         - in: body
           name: requestBody
