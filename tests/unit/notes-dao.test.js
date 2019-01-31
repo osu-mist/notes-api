@@ -8,14 +8,13 @@ const sinon = require('sinon');
 
 const testData = require('./test-data');
 
+const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
 const fsOps = appRoot.require('utils/fs-operations');
 
 chai.use(chaiExclude);
 const { assert } = chai;
 
-sinon.replace(fsOps, 'validateDBPath', () => null);
 sinon.replace(config, 'get', property => testData.mockConfig[property]);
-const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
 
 /**
  * @summary Validate the contents of a link
