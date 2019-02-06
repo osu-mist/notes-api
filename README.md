@@ -14,24 +14,24 @@ This API allows operations for notes that advisors have made on students. Docume
 
 4. Copy [config/default-example.yaml](config/default-example.yaml) to `config/default.yaml`. Modify as necessary, being careful to avoid committing sensitive data. If you want to configure application through [custom environment variables](https://github.com/lorenwest/node-config/wiki/Environment-Variables#custom-environment-variables), copy [config/custom-environment-variables-example.yaml](config/custom-environment-variables-example.yaml) as `config/custom-environment-variables.yaml` and map the environment variable names into your configuration structure.
 
-    * **Environment variables**: Sensitive data and data that changes per environment has been moved into environment variables. Below is a list of the variables along with a definition:
+    **Environment variables**: Sensitive data and data that changes per environment have been moved into environment variables. Below is a list of the variables along with a definition:
 
-        | Environment variable | Description |
-        | -------------------- | ----------- |
-        | **${PORT}** | The port used by the API. |
-        | **${ADMIN_PORT}** | The port used by the **ADMIN** endpoint. |
-        | **${USER}** | The HTTP Basic username used to authenticate API calls. |
-        | **${PASSWD}** | The HTTP Basic password used to authenticate API calls. |
-        | **${ENDPOINTURI}** | API endpoint URI. |
+    | Environment variable | Description |
+    | -------------------- | ----------- |
+    | **${API_HOSTNAME}** | API hostname. |
+    | **${API_PORT}** | The port used by the API. |
+    | **${API_ADMIN_PORT}** | The port used by the **ADMIN** endpoint. |
+    | **${API_USER}** | The HTTP Basic username used to authenticate API calls. |
+    | **${API_PASSWD}** | The HTTP Basic password used to authenticate API calls. |
 
-    * **Options for logger configuration**:
+    **Options for logger configuration**:
 
-        | Option | Description |
-        | ------ | ----------- |
-        | **size** | Maximum size of the file after which it will rotate. This can be a number of bytes, or units of kb, mb, and gb. If using the units, add 'k', 'm', or 'g' as the suffix. The units need to directly follow the number. |
-        | **path** | The directory name to save log files to. |
-        | **pattern** | A string representing the [moment.js date format](https://momentjs.com/docs/#/displaying/format/) to be used for rotating. The meta characters used in this string will dictate the frequency of the file rotation. For example, if your datePattern is simply 'HH' you will end up with 24 log files that are picked up and appended to every day. |
-        | **archive** | A boolean to define whether or not to gzip archived log files. |
+    | Option | Description |
+    | ------ | ----------- |
+    | **size** | Maximum size of the file after which it will rotate. This can be a number of bytes, or units of kb, mb, and gb. If using the units, add 'k', 'm', or 'g' as the suffix. The units need to directly follow the number. |
+    | **path** | The directory name to save log files to. |
+    | **pattern** | A string representing the [moment.js date format](https://momentjs.com/docs/#/displaying/format/) to be used for rotating. The meta characters used in this string will dictate the frequency of the file rotation. For example, if your datePattern is simply 'HH' you will end up with 24 log files that are picked up and appended to every day. |
+    | **archive** | A boolean to define whether or not to gzip archived log files. |
 
 ## Installing
 
@@ -48,11 +48,11 @@ $ npm install
 Run the application:
 
   ```shell
-  # Run linting and testing tasks before start the app
+  # Run linting and testing tasks before starting the app
   $ gulp run
 
   # Run the app without running linting and testing tasks (only for development)
-  $ nodemon app.js
+  $ gulp start
   ```
 
 ## Running the tests
@@ -62,20 +62,23 @@ Run the application:
 Run [ESLint](https://eslint.org/) to check the code:
 
 ```shell
-# Using npm
-$ npm run lint
-
 # Using gulp
 $ gulp lint
+
+# Using npm
+$ npm run lint
 ```
 
-_Note: We are following [Airbnb's style](https://github.com/airbnb/javascript) as the JavaScript style guide_
+> Note: We are following [Airbnb's style](https://github.com/airbnb/javascript) as the JavaScript style guide.
 
 ### Testing
 
 Run unit tests:
 
 ```shell
+# Using gulp
+$ gulp test
+
 # Using npm
 $ npm test
 ```

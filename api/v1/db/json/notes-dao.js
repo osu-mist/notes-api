@@ -13,9 +13,6 @@ const { dbDirectoryPath } = config.get('api');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
 
-const { dbDirectoryPath } = config.get('api');
-validateDBPath(dbDirectoryPath);
-
 /**
  * @summary Parses studentID from noteID
  * @function
@@ -70,7 +67,7 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
-      const rawNote = readJSONFile(`${studentDirPath}/${file}`);
+      const rawNote = fsOps.readJSONFile(`${studentDirPath}/${file}`);
       rawNotes.source = localSourceName;
       rawNotes.push(rawNote);
     });
@@ -122,10 +119,7 @@ const writeNote = (noteID, newContents, failIfExists = false) => {
  */
 const getNoteByID = noteID => new Promise((resolve, reject) => {
   try {
-    const studentID = noteID.split('-')[0];
-    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-
-    const rawNote = readJSONFile(`${studentDirPath}/${noteID}.json`);
+    const rawNote = fetchNote(noteID);
     if (!rawNote) {
       resolve(undefined);
     }
@@ -222,7 +216,9 @@ const deleteNoteByID = noteID => new Promise((resolve, reject) => {
 
 module.exports = {
   getNotes,
-  postNotes,
+  postNote,
+  getNoteByID,
   patchNoteByID,
+  filterNotes,
   deleteNoteByID,
 };

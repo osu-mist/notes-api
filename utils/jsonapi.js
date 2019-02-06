@@ -16,8 +16,8 @@ const serializerOptions = (serializerArgs) => {
     pagination,
     resourcePath,
     topLevelSelfLink,
-    subresourcePath,
     keyForAttribute,
+    enableDataLinks,
   } = serializerArgs;
 
   const options = {

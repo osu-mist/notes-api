@@ -94,5 +94,11 @@ const deleteFile = (filePath) => {
 };
 
 module.exports = {
-  validateDBPath, readJSONFile, writeJSONFile, initStudentDir, getCounter, incrementCounter,
+  validateDBPath,
+  readJSONFile,
+  writeJSONFile,
+  initStudentDir,
+  getCounter,
+  incrementCounter,
+  deleteFile,
 };
