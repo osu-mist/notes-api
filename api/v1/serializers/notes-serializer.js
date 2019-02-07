@@ -13,6 +13,7 @@ const noteResourcePath = 'notes';
 
 // Preserve the string format between the database and the serialized object during serialization
 const keyForAttribute = string => string;
+const enableDataLinks = true;
 
 /**
  * @summary Serialize noteResources to JSON API
@@ -29,6 +30,7 @@ const serializeNotes = (rawNotes, query) => {
     resourcePath: noteResourcePath,
     topLevelSelfLink,
     keyForAttribute,
+    enableDataLinks,
   };
 
   return new JSONAPISerializer(
@@ -51,6 +53,7 @@ const serializeNote = (rawNote) => {
     resourcePath: noteResourcePath,
     topLevelSelfLink,
     keyForAttribute,
+    enableDataLinks,
   };
 
   return new JSONAPISerializer(

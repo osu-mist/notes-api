@@ -23,6 +23,7 @@
   "homepage": "https://github.com/osu-mist/express-api-skeleton#readme",
   "dependencies": {
     "app-root-path": "^2.1.0",
+    "aws-sdk": "^2.398.0",
     "body-parser": "^1.18.3",
     "capitalize": "^2.0.0",
     "chai-exclude": "^1.0.12",
