@@ -13,13 +13,12 @@ const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { authentication } = appRoot.require('middlewares/authentication');
 const { logger } = appRoot.require('middlewares/logger');
 const { runtimeErrors } = appRoot.require('middlewares/runtime-errors');
-const { validateDBPath } = appRoot.require('utils/fs-operations');
 const { openapi } = appRoot.require('utils/load-openapi');
+const { validateDataSource } = appRoot.require('utils/validate-data-source');
 
 const serverConfig = config.get('server');
 
-const { dbDirectoryPath } = config.get('api');
-validateDBPath(dbDirectoryPath);
+validateDataSource();
 
 /**
  * @summary Initialize Express applications and routers

@@ -27,4 +27,7 @@ database:
   poolIncrement: 0
 
 api:
+  # Valid options are "AWS" and "local"
+  dataSource: AWS
+  awsBucket: aws-bucket-name
   dbDirectoryPath: /path/to/json/database
