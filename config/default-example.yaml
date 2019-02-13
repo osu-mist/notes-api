@@ -31,3 +31,11 @@ api:
   dataSource: AWS
   awsBucket: aws-bucket-name
   dbDirectoryPath: /path/to/json/database
+
+aws:
+  accessKeyId: access-key-id
+  secretAccessKey: secret-access-key
+  region: us-west-2
+  # These values are for testing on local or proxy S3 instances
+  endpoint: null
+  s3ForcePathStyle: false

@@ -1,6 +1,22 @@
 const AWS = require('aws-sdk');
+const config = require('config');
 
-const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
+const {
+  accessKeyId,
+  secretAccessKey,
+  region,
+  endpoint,
+  s3ForcePathStyle,
+} = config.get('aws');
+
+const s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  accessKeyId,
+  secretAccessKey,
+  region,
+  endpoint,
+  s3ForcePathStyle,
+});
 this.bucket = null;
 
 /**
@@ -20,7 +36,7 @@ const setBucket = (bucket) => {
 const bucketExists = (bucket = this.bucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket };
   // TODO: use valid credentials
-  s3.makeUnauthenticatedRequest('headBucket', params).promise().then(() => {
+  s3.headBucket(params).promise().then(() => {
     resolve(true);
   }).catch((err) => {
     if (err.code === 'NotFound') {
@@ -41,7 +57,7 @@ const bucketExists = (bucket = this.bucket) => new Promise((resolve, reject) => 
 const objectExists = (key, bucket = this.bucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
   // TODO: use valid credentials
-  s3.makeUnauthenticatedRequest('headObject', params).promise().then(() => {
+  s3.headObject(params).promise().then(() => {
     resolve(true);
   }).catch((err) => {
     if (err.code === 'NotFound') {
@@ -62,7 +78,7 @@ const objectExists = (key, bucket = this.bucket) => new Promise((resolve, reject
 const getObject = (key, bucket = this.bucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
   // TODO: use valid credentials
-  s3.makeUnauthenticatedRequest('getObject', params).promise().then((data) => {
+  s3.getObject(params).promise().then((data) => {
     resolve(data);
   }).catch((err) => {
     reject(err);
