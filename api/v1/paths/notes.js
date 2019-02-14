@@ -1,6 +1,6 @@
 const appRoot = require('app-root-path');
 
-const notesDAO = require('../db/json/notes-dao');
+const notesDAO = require('../db/aws/notes-dao');
 
 const { errorHandler } = appRoot.require('errors/errors');
 const { openapi: { paths } } = appRoot.require('utils/load-openapi');

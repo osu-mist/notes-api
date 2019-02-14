@@ -1,14 +1,14 @@
 const appRoot = require('app-root-path');
 const config = require('config');
-const fs = require('fs');
 const _ = require('lodash');
 const moment = require('moment');
-const path = require('path');
 
-const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
+const { serializeNote, serializeNotes } = require('../../serializers/notes-serializer');
 
+const { listObjects, getObject } = appRoot.require('utils/aws-operations');
 const fsOps = appRoot.require('utils/fs-operations');
 
+// TODO: remove
 const { dbDirectoryPath } = config.get('api');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
@@ -52,33 +52,26 @@ const filterNotes = (rawNotes, queryParams) => {
   return rawNotes;
 };
 
-/**
- * @summary Return a list of notes filtered/sorted by query parameters
- * @function
- * @param {Object} query Query parameters
- * @returns {Promise} Promise object represents a list of notes
- */
-const getNotes = query => new Promise((resolve, reject) => {
-  try {
-    const { studentID } = query;
-    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
-    noteFiles = _.filter(noteFiles, it => path.extname(it).toLowerCase() === '.json');
+const getNotes = async (query) => {
+  const { studentID } = query;
+  const prefix = `${studentID}/`;
+  const objects = await listObjects({ Prefix: prefix });
 
-    let rawNotes = [];
-    _.forEach(noteFiles, (file) => {
-      const rawNote = fsOps.readJSONFile(`${studentDirPath}/${file}`);
-      rawNotes.source = localSourceName;
-      rawNotes.push(rawNote);
-    });
-    rawNotes = filterNotes(rawNotes, query);
+  const objectKeys = _.map(objects.Contents, it => it.Key);
 
-    const serializedNotes = serializeNotes(rawNotes, query);
-    resolve(serializedNotes);
-  } catch (err) {
-    reject(err);
-  }
-});
+  let rawNotes = [];
+  await Promise.all(_.map(objectKeys, async (it) => {
+    const object = await getObject(it);
+    const noteBody = JSON.parse(object.Body.toString('utf8'));
+    noteBody.source = localSourceName;
+    rawNotes.push(noteBody);
+  }));
+
+  rawNotes = filterNotes(rawNotes, query);
+
+  const serializedNotes = serializeNotes(rawNotes, query);
+  return serializedNotes;
+};
 
 /**
  * @summary Fetch a note from the database by its noteID

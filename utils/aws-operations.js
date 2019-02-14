@@ -35,7 +35,6 @@ const setBucket = (bucket) => {
  */
 const bucketExists = (bucket = this.bucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket };
-  // TODO: use valid credentials
   s3.headBucket(params).promise().then(() => {
     resolve(true);
   }).catch((err) => {
@@ -56,7 +55,6 @@ const bucketExists = (bucket = this.bucket) => new Promise((resolve, reject) => 
  */
 const objectExists = (key, bucket = this.bucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
-  // TODO: use valid credentials
   s3.headObject(params).promise().then(() => {
     resolve(true);
   }).catch((err) => {
@@ -69,25 +67,33 @@ const objectExists = (key, bucket = this.bucket) => new Promise((resolve, reject
 });
 
 /**
+ * @summary List objects in a bucket
+ * @function
+ * @param params Additional params to be used in the search
+ * @param bucket The bucket to search for objects
+ * @returns {Promise} Promise object representing the objects
+ */
+const listObjects = (params = {}, bucket = this.bucket) => {
+  const newParams = Object.assign(params, { Bucket: bucket });
+  return s3.listObjectsV2(newParams).promise();
+};
+
+/**
  * @summary Gets an object from a bucket
  * @function
  * @param key The key of the object
  * @param bucket The bucket where the object exists
  * @returns {Promise} Promise object representing the object response
  */
-const getObject = (key, bucket = this.bucket) => new Promise((resolve, reject) => {
+const getObject = (key, bucket = this.bucket) => {
   const params = { Bucket: bucket, Key: key };
-  // TODO: use valid credentials
-  s3.getObject(params).promise().then((data) => {
-    resolve(data);
-  }).catch((err) => {
-    reject(err);
-  });
-});
+  return s3.getObject(params).promise();
+};
 
 module.exports = {
   setBucket,
   bucketExists,
   objectExists,
+  listObjects,
   getObject,
 };
