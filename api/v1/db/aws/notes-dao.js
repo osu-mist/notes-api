@@ -5,7 +5,8 @@ const moment = require('moment');
 
 const { serializeNote, serializeNotes } = require('../../serializers/notes-serializer');
 
-const { listObjects, getObject } = appRoot.require('utils/aws-operations');
+const awsOps = appRoot.require('utils/aws-operations');
+// TODO: remove
 const fsOps = appRoot.require('utils/fs-operations');
 
 // TODO: remove
@@ -20,6 +21,38 @@ const localSourceName = 'advisorPortal';
  * @returns {string}
  */
 const parseStudentID = noteID => noteID.split('-')[0];
+
+/**
+ * @summary Fetch a note from the database by its noteID
+ * @function
+ * @param noteID
+ * @returns {Object} The raw note from the DB
+ */
+const fetchNote = async (noteID) => {
+  const studentID = parseStudentID(noteID);
+  const key = `${studentID}/${noteID}.json`;
+
+  if (!await awsOps.objectExists(key)) {
+    return undefined;
+  }
+  const object = await awsOps.getObject(key);
+  return JSON.parse(object.Body.toString('utf8'));
+};
+
+/**
+ * @summary Write newContents to the note with id noteID
+ * @function
+ * @param noteID
+ * @param newContents
+ * @param failIfExists If true, the method will throw an error if the file
+ *                     already exists
+ */
+const writeNote = (noteID, newContents, failIfExists = false) => {
+  const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
+  const studentID = parseStudentID(noteID);
+  const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
+  fsOps.writeJSONFile(noteFilePath, newContents, options);
+};
 
 /**
  * @summary Filter notes using parameters
@@ -52,16 +85,22 @@ const filterNotes = (rawNotes, queryParams) => {
   return rawNotes;
 };
 
+/**
+ * @summary Return a list of notes filtered/sorted by query parameters
+ * @function
+ * @param {Object} query Query parameters
+ * @returns {Promise} Promise object represents a list of notes
+ */
 const getNotes = async (query) => {
   const { studentID } = query;
   const prefix = `${studentID}/`;
-  const objects = await listObjects({ Prefix: prefix });
+  const objects = await awsOps.listObjects({ Prefix: prefix });
 
   const objectKeys = _.map(objects.Contents, it => it.Key);
 
   let rawNotes = [];
   await Promise.all(_.map(objectKeys, async (it) => {
-    const object = await getObject(it);
+    const object = await awsOps.getObject(it);
     const noteBody = JSON.parse(object.Body.toString('utf8'));
     noteBody.source = localSourceName;
     rawNotes.push(noteBody);
@@ -74,56 +113,20 @@ const getNotes = async (query) => {
 };
 
 /**
- * @summary Fetch a note from the database by its noteID
- * @function
- * @param noteID
- * @returns {Object} The raw note from the DB
- */
-const fetchNote = (noteID) => {
-  try {
-    const studentID = parseStudentID(noteID);
-    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    return fsOps.readJSONFile(`${studentDirPath}/${noteID}.json`);
-  } catch (err) {
-    return null;
-  }
-};
-
-/**
- * @summary Write newContents to the note with id noteID
- * @function
- * @param noteID
- * @param newContents
- * @param failIfExists If true, the method will throw an error if the file
- *                     already exists
- */
-const writeNote = (noteID, newContents, failIfExists = false) => {
-  const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
-  const studentID = parseStudentID(noteID);
-  const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-  fsOps.writeJSONFile(noteFilePath, newContents, options);
-};
-
-/**
  * @summary Return a specific note by noteID
  * @function
  * @param {string} noteID id of the note in the form: '{studentID}-{number}'
  * @returns {Promise} Promise object represents a specific note
  */
-const getNoteByID = noteID => new Promise((resolve, reject) => {
-  try {
-    const rawNote = fetchNote(noteID);
-    if (!rawNote) {
-      resolve(undefined);
-    }
-    rawNote.source = localSourceName;
-
-    const serializedNote = serializeNote(rawNote);
-    resolve(serializedNote);
-  } catch (err) {
-    reject(err);
+const getNoteByID = async (noteID) => {
+  const rawNote = await fetchNote(noteID);
+  if (!rawNote) {
+    return undefined;
   }
-});
+  rawNote.source = localSourceName;
+  const serializedNote = serializeNote(rawNote);
+  return serializedNote;
+};
 
 /**
  * @summary Create a new note
