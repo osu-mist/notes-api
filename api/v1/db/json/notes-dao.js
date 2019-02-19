@@ -66,7 +66,7 @@ const getNotes = query => new Promise((resolve, reject) => {
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
       const rawNote = fsOps.readJSONFile(`${studentDirPath}/${file}`);
-      rawNotes.source = localSourceName;
+      rawNote.source = localSourceName;
       rawNotes.push(rawNote);
     });
     rawNotes = filterNotes(rawNotes, query);
