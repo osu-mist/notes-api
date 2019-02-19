@@ -4,14 +4,14 @@ const config = require('config');
 const awsConfig = config.get('aws');
 
 const s3 = new AWS.S3(awsConfig);
-this.bucket = null;
+let thisBucket = null;
 
 /**
  * @summary Set the bucket to be used for subsequent function calls.
  * @function
  */
 const setBucket = (bucket) => {
-  this.bucket = bucket;
+  thisBucket = bucket;
 };
 
 /**
@@ -20,7 +20,7 @@ const setBucket = (bucket) => {
  * @param bucket The bucket to be checked
  * @returns {Promise} Promise object represents a boolean indicating if the bucket exists or not
  */
-const bucketExists = (bucket = this.bucket) => new Promise((resolve, reject) => {
+const bucketExists = (bucket = thisBucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket };
   // TODO: use valid credentials
   s3.headBucket(params).promise().then(() => {
@@ -41,7 +41,7 @@ const bucketExists = (bucket = this.bucket) => new Promise((resolve, reject) => 
  * @param bucket The bucket where the key will be searched
  * @returns {Promise} Promise object represents a boolean indicating if the key exists or not
  */
-const objectExists = (key, bucket = this.bucket) => new Promise((resolve, reject) => {
+const objectExists = (key, bucket = thisBucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
   // TODO: use valid credentials
   s3.headObject(params).promise().then(() => {
@@ -62,7 +62,7 @@ const objectExists = (key, bucket = this.bucket) => new Promise((resolve, reject
  * @param bucket The bucket where the object exists
  * @returns {Promise} Promise object representing the object response
  */
-const getObject = (key, bucket = this.bucket) => new Promise((resolve, reject) => {
+const getObject = (key, bucket = thisBucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
   // TODO: use valid credentials
   s3.getObject(params).promise().then((data) => {
