@@ -17,14 +17,14 @@ const s3 = new AWS.S3({
   endpoint,
   s3ForcePathStyle,
 });
-this.bucket = null;
+let thisBucket = null;
 
 /**
  * @summary Set the bucket to be used for subsequent function calls.
  * @function
  */
 const setBucket = (bucket) => {
-  this.bucket = bucket;
+  thisBucket = bucket;
 };
 
 /**
@@ -33,7 +33,7 @@ const setBucket = (bucket) => {
  * @param bucket The bucket to be checked
  * @returns {Promise} Promise object represents a boolean indicating if the bucket exists or not
  */
-const bucketExists = (bucket = this.bucket) => new Promise((resolve, reject) => {
+const bucketExists = (bucket = thisBucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket };
   s3.headBucket(params).promise().then(() => {
     resolve(true);
@@ -53,7 +53,7 @@ const bucketExists = (bucket = this.bucket) => new Promise((resolve, reject) => 
  * @param bucket The bucket where the key will be searched
  * @returns {Promise} Promise object represents a boolean indicating if the key exists or not
  */
-const objectExists = (key, bucket = this.bucket) => new Promise((resolve, reject) => {
+const objectExists = (key, bucket = thisBucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
   s3.headObject(params).promise().then(() => {
     resolve(true);
@@ -73,7 +73,7 @@ const objectExists = (key, bucket = this.bucket) => new Promise((resolve, reject
  * @param bucket The bucket to search for objects
  * @returns {Promise} Promise object representing the objects
  */
-const listObjects = (params = {}, bucket = this.bucket) => {
+const listObjects = (params = {}, bucket = thisBucket) => {
   const newParams = Object.assign(params, { Bucket: bucket });
   return s3.listObjectsV2(newParams).promise();
 };
@@ -85,7 +85,7 @@ const listObjects = (params = {}, bucket = this.bucket) => {
  * @param bucket The bucket where the object exists
  * @returns {Promise} Promise object representing the object response
  */
-const getObject = (key, bucket = this.bucket) => {
+const getObject = (key, bucket = thisBucket) => {
   const params = { Bucket: bucket, Key: key };
   return s3.getObject(params).promise();
 };

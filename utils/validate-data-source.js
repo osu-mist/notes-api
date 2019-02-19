@@ -1,9 +1,8 @@
 const appRoot = require('app-root-path');
 const config = require('config');
 
-const { validateDBPath } = require('./fs-operations');
-
-const { setBucket, bucketExists } = appRoot.require('utils/aws-operations');
+const { setBucket, bucketExists } = appRoot.require('api/v1/db/aws/aws-operations');
+const { validateDBPath } = appRoot.require('api/v1/db/json/fs-operations');
 
 const { dataSource } = config.get('api');
 

@@ -33,6 +33,7 @@ api:
   dbDirectoryPath: /path/to/json/database
 
 aws:
+  apiVersion: '2006-03-01'
   accessKeyId: access-key-id
   secretAccessKey: secret-access-key
   region: us-west-2
