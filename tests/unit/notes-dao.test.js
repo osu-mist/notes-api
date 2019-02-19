@@ -8,8 +8,8 @@ const sinon = require('sinon');
 
 const testData = require('./test-data');
 
+const fsOps = appRoot.require('api/v1/db/json/fs-operations');
 const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
-const fsOps = appRoot.require('utils/fs-operations');
 
 chai.use(chaiExclude);
 const { assert } = chai;

@@ -1,13 +1,11 @@
-const appRoot = require('app-root-path');
 const config = require('config');
 const fs = require('fs');
 const _ = require('lodash');
 const moment = require('moment');
 const path = require('path');
 
+const fsOps = require('./fs-operations');
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
-
-const fsOps = appRoot.require('utils/fs-operations');
 
 const { dbDirectoryPath } = config.get('api');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
