@@ -4,15 +4,35 @@ const JSONAPISerializer = require('jsonapi-serializer').Serializer;
 
 const { serializerOptions } = appRoot.require('utils/jsonapi');
 const { openapi } = appRoot.require('utils/load-openapi');
-const { querySelfLink, idSelfLink } = appRoot.require('utils/uri-builder');
+const { apiBaseUrl, resourcePathLink, paramsLink } = appRoot.require('utils/uri-builder');
 
 const noteResourceProp = openapi.definitions.NoteResource.properties;
 const noteResourceType = noteResourceProp.type.enum[0];
 const noteResourceKeys = _.keys(noteResourceProp.attributes.properties);
 const noteResourcePath = 'notes';
+const noteResourceUrl = resourcePathLink(apiBaseUrl, noteResourcePath);
 
 // Preserve the string format between the database and the serialized object during serialization
 const keyForAttribute = string => string;
+const enableDataLinks = true;
+
+const getSerializerArgs = topLevelSelfLink => (
+  {
+    identifierField: 'id',
+    resourceKeys: noteResourceKeys,
+    resourcePath: noteResourcePath,
+    topLevelSelfLink,
+    keyForAttribute,
+    enableDataLinks,
+  }
+);
+
+const getJSONAPISerializer = (serializerArgs, data) => (
+  new JSONAPISerializer(
+    noteResourceType,
+    serializerOptions(serializerArgs),
+  ).serialize(data)
+);
 
 /**
  * @summary Serialize noteResources to JSON API
@@ -22,19 +42,9 @@ const keyForAttribute = string => string;
  * @returns {Object} Serialized noteResources object
  */
 const serializeNotes = (rawNotes, query) => {
-  const topLevelSelfLink = querySelfLink(query, noteResourcePath);
-  const serializerArgs = {
-    identifierField: 'id',
-    resourceKeys: noteResourceKeys,
-    resourcePath: noteResourcePath,
-    topLevelSelfLink,
-    keyForAttribute,
-  };
-
-  return new JSONAPISerializer(
-    noteResourceType,
-    serializerOptions(serializerArgs),
-  ).serialize(rawNotes);
+  const topLevelSelfLink = paramsLink(noteResourceUrl, query);
+  const serializerArgs = getSerializerArgs(topLevelSelfLink);
+  return getJSONAPISerializer(serializerArgs, rawNotes);
 };
 
 /**
@@ -44,18 +54,8 @@ const serializeNotes = (rawNotes, query) => {
  * @returns {Object} Serialized noteResource object
  */
 const serializeNote = (rawNote) => {
-  const topLevelSelfLink = idSelfLink(rawNote.id, noteResourcePath);
-  const serializerArgs = {
-    identifierField: 'id',
-    resourceKeys: noteResourceKeys,
-    resourcePath: noteResourcePath,
-    topLevelSelfLink,
-    keyForAttribute,
-  };
-
-  return new JSONAPISerializer(
-    noteResourceType,
-    serializerOptions(serializerArgs),
-  ).serialize(rawNote);
+  const topLevelSelfLink = resourcePathLink(noteResourceUrl, rawNote.id);
+  const serializerArgs = getSerializerArgs(topLevelSelfLink);
+  return getJSONAPISerializer(serializerArgs, rawNote);
 };
 module.exports = { serializeNotes, serializeNote };

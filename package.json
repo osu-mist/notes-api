@@ -23,6 +23,7 @@
   "homepage": "https://github.com/osu-mist/express-api-skeleton#readme",
   "dependencies": {
     "app-root-path": "^2.1.0",
+    "aws-sdk": "^2.398.0",
     "body-parser": "^1.18.3",
     "capitalize": "^2.0.0",
     "chai-exclude": "^1.0.12",
@@ -39,6 +40,7 @@
     "jsonapi-serializer": "^3.5.6",
     "lodash": "^4.17.11",
     "moment": "^2.22.2",
+    "query-string": "^6.2.0",
     "simple-git": "^1.96.0",
     "sinon": "^7.2.2",
     "swagger-parser": "^6.0.3",
