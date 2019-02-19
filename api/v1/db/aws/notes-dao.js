@@ -3,11 +3,10 @@ const config = require('config');
 const _ = require('lodash');
 const moment = require('moment');
 
-const { serializeNote, serializeNotes } = require('../../serializers/notes-serializer');
-
-const awsOps = appRoot.require('utils/aws-operations');
+const awsOps = require('./aws-operations');
 // TODO: remove
-const fsOps = appRoot.require('utils/fs-operations');
+const fsOps = appRoot.require('api/v1/db/json/fs-operations');
+const { serializeNote, serializeNotes } = require('../../serializers/notes-serializer');
 
 // TODO: remove
 const { dbDirectoryPath } = config.get('api');
@@ -97,6 +96,7 @@ const getNotes = async (query) => {
   const objects = await awsOps.listObjects({ Prefix: prefix });
 
   const objectKeys = _.map(objects.Contents, it => it.Key);
+  _.remove(objectKeys, it => it[it.length - 1] === '/');
 
   let rawNotes = [];
   await Promise.all(_.map(objectKeys, async (it) => {
