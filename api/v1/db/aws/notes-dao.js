@@ -12,6 +12,7 @@ const { serializeNote, serializeNotes } = require('../../serializers/notes-seria
 const { dbDirectoryPath } = config.get('api');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
+const counterMetadataKey = 'x-amz-meta-counter';
 
 /**
  * @summary Parses studentID from noteID
@@ -20,6 +21,17 @@ const localSourceName = 'advisorPortal';
  * @returns {string}
  */
 const parseStudentID = noteID => noteID.split('-')[0];
+
+/**
+ * @summary Increment the counter
+ * @function
+ * @param {string} studentDirKey
+ * @param {string} counter
+ */
+const incrementCounter = async (studentDirKey, counter) => {
+  const newCounter = (parseInt(counter, 10) + 1).toString();
+  await awsOps.updateMetadata({ [counterMetadataKey]: newCounter }, studentDirKey);
+};
 
 /**
  * @summary Fetch a note from the database by its noteID
@@ -41,16 +53,17 @@ const fetchNote = async (noteID) => {
 /**
  * @summary Write newContents to the note with id noteID
  * @function
- * @param noteID
- * @param newContents
- * @param failIfExists If true, the method will throw an error if the file
- *                     already exists
+ * @param {string} noteID
+ * @param {Object} newContents
+ * @param {boolean} failIfExists If true, the method will throw an error if the note already exists
  */
-const writeNote = (noteID, newContents, failIfExists = false) => {
-  const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
+const writeNote = async (noteID, newContents, failIfExists = false) => {
   const studentID = parseStudentID(noteID);
-  const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-  fsOps.writeJSONFile(noteFilePath, newContents, options);
+  const key = `${studentID}/${noteID}.json`;
+  if (failIfExists && await awsOps.objectExists(key)) {
+    throw new Error(`Error: object with key: "${key}" was not expected to exist`);
+  }
+  await awsOps.putObject(newContents, key);
 };
 
 /**
@@ -65,7 +78,11 @@ const filterNotes = (rawNotes, queryParams) => {
   const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
 
   const {
-    creatorID, q, sources, sortKey, contextTypes,
+    creatorID,
+    q,
+    sources,
+    sortKey,
+    contextTypes,
   } = queryParams;
 
   rawNotes = creatorID ? _.filter(rawNotes, it => it.creatorID === creatorID) : rawNotes;
@@ -134,46 +151,42 @@ const getNoteByID = async (noteID) => {
  * @param body
  * @returns {Promise} Promise object representing the new note
  */
-const postNote = body => new Promise((resolve, reject) => {
-  try {
-    const { attributes } = body.data;
-    const {
-      note, studentID, creatorID,
-    } = attributes;
+const postNote = async (body) => {
+  const { attributes } = body.data;
+  const { note, studentID, creatorID } = attributes;
 
-    // express-openapi does not correctly handle this default value so it must be specified manually
-    const permissions = attributes.permissions || 'advisor';
-    // ignore additional fields in context
-    const context = attributes.context ? {
-      contextType: attributes.context.contextType, contextID: attributes.context.contextID,
-    } : null;
+  // express-openapi does not correctly handle this default value so it must be specified manually
+  const permissions = attributes.permissions || 'advisor';
+  // ignore additional fields in context
+  const context = attributes.context ? {
+    contextType: attributes.context.contextType,
+    contextID: attributes.context.contextID,
+  } : null;
 
-    const studentDir = `${dbDirectoryPath}/${studentID}`;
-    const counterFilePath = `${studentDir}/counter.txt`;
-    fsOps.initStudentDir(studentDir, counterFilePath);
-
-    const counter = fsOps.getCounter(counterFilePath);
-    const noteID = `${studentID}-${counter}`;
-
-    const newNote = {
-      id: noteID,
-      note,
-      studentID,
-      creatorID,
-      permissions,
-      context,
-    };
-    newNote.dateCreated = moment().toISOString();
-    newNote.lastModified = newNote.dateCreated;
-
-    writeNote(noteID, newNote, true);
-    fsOps.incrementCounter(counterFilePath);
-
-    resolve(getNoteByID(noteID));
-  } catch (err) {
-    reject(err);
+  const studentDirKey = `${studentID}/`;
+  if (!await awsOps.objectExists(studentDirKey)) {
+    await awsOps.putDir(studentDirKey, { Metadata: { [counterMetadataKey]: '1' } });
   }
-});
+
+  const head = await awsOps.headObject(studentDirKey);
+  const counter = head.Metadata[counterMetadataKey];
+  const noteID = `${studentID}-${counter}`;
+
+  const newNote = {
+    id: noteID,
+    note,
+    studentID,
+    creatorID,
+    permissions,
+    context,
+  };
+  newNote.dateCreated = moment().toISOString();
+  newNote.lastModified = newNote.dateCreated;
+
+  await writeNote(noteID, newNote, true);
+  await incrementCounter(studentDirKey, counter);
+  return getNoteByID(noteID);
+};
 
 /**
  * @summary Patch a note by noteID

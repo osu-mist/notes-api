@@ -30,7 +30,7 @@ const setBucket = (bucket) => {
 /**
  * @summary Checks if a bucket exists
  * @function
- * @param bucket The bucket to be checked
+ * @param {string} bucket The bucket to be checked
  * @returns {Promise} Promise object represents a boolean indicating if the bucket exists or not
  */
 const bucketExists = (bucket = thisBucket) => new Promise((resolve, reject) => {
@@ -49,8 +49,8 @@ const bucketExists = (bucket = thisBucket) => new Promise((resolve, reject) => {
 /**
  * @summary Checks if an object exists in a bucket
  * @function
- * @param key The key of the object to be checked
- * @param bucket The bucket where the key will be searched
+ * @param {string} key The key of the object to be checked
+ * @param {string} bucket The bucket where the key will be searched
  * @returns {Promise} Promise object represents a boolean indicating if the key exists or not
  */
 const objectExists = (key, bucket = thisBucket) => new Promise((resolve, reject) => {
@@ -67,22 +67,34 @@ const objectExists = (key, bucket = thisBucket) => new Promise((resolve, reject)
 });
 
 /**
+ * @summary Gets metadata on an object by making a head-object request
+ * @function
+ * @param {string} key Key of the object
+ * @param {string} bucket Bucket where the object exists
+ * @returns {Promise} Promise object representing the response
+ */
+const headObject = (key, bucket = thisBucket) => {
+  const params = { Bucket: bucket, Key: key };
+  return s3.headObject(params).promise();
+};
+
+/**
  * @summary List objects in a bucket
  * @function
- * @param params Additional params to be used in the search
- * @param bucket The bucket to search for objects
+ * @param {Object} params Additional params to be used in the search
+ * @param {string} bucket The bucket to search for objects
  * @returns {Promise} Promise object representing the objects
  */
 const listObjects = (params = {}, bucket = thisBucket) => {
-  const newParams = Object.assign(params, { Bucket: bucket });
+  const newParams = Object.assign({ Bucket: bucket }, params);
   return s3.listObjectsV2(newParams).promise();
 };
 
 /**
  * @summary Gets an object from a bucket
  * @function
- * @param key The key of the object
- * @param bucket The bucket where the object exists
+ * @param {string} key The key of the object
+ * @param {string} bucket The bucket where the object exists
  * @returns {Promise} Promise object representing the object response
  */
 const getObject = (key, bucket = thisBucket) => {
@@ -90,10 +102,76 @@ const getObject = (key, bucket = thisBucket) => {
   return s3.getObject(params).promise();
 };
 
+/**
+ * @summary Uploads a new directory object to a bucket
+ * @function
+ * @param {string} key The key of the object. Must end with "/"
+ * @param {Object} params Additional params to be used when creating the directory
+ * @param {string} bucket The bucket that the object will be uploaded to
+ * @returns {Promise} Promise object representing the response
+ */
+const putDir = (key, params = {}, bucket = thisBucket) => {
+  if (key[key.length - 1] !== '/') {
+    throw new Error(`Error: directory key: "${key}" does not end with "/"`);
+  }
+  const newParams = Object.assign(
+    { Key: key, Bucket: bucket, ContentType: 'application/x-directory' },
+    params,
+  );
+  return s3.putObject(newParams).promise();
+};
+
+/**
+ * @summary Uploads a JSON object to a bucket
+ * @function
+ * @param {Object} object The JSON object to be uploaded
+ * @param {string} key The desired key name of the object
+ * @param {Object} params Additional params to be used in put-object
+ * @param {string} bucket The bucket to upload the object to
+ * @returns {Promise} Promise object representing the response
+ */
+const putObject = (object, key, params = {}, bucket = thisBucket) => {
+  const newParams = Object.assign(
+    {
+      Body: JSON.stringify(object, null, 2),
+      Key: key,
+      Bucket: bucket,
+      ContentType: 'application/json',
+    },
+    params,
+  );
+  return s3.putObject(newParams).promise();
+};
+
+/**
+ * @summary Update an existing object's metadata by copying the object to itself
+ * @function
+ * @param {Object} metadata
+ * @param {string} key
+ * @param {string} bucket
+ */
+const updateMetadata = async (metadata, key, bucket = thisBucket) => {
+  const currentHead = await headObject(key, bucket);
+  const newMetadata = Object.assign(currentHead.Metadata, metadata);
+  const params = {
+    Bucket: bucket,
+    Key: key,
+    CopySource: `${bucket}/${key}`,
+    ContentType: currentHead.ContentType,
+    Metadata: newMetadata,
+    MetadataDirective: 'REPLACE',
+  };
+  return s3.copyObject(params).promise();
+};
+
 module.exports = {
   setBucket,
   bucketExists,
   objectExists,
+  headObject,
   listObjects,
   getObject,
+  putDir,
+  putObject,
+  updateMetadata,
 };
