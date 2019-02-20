@@ -164,6 +164,19 @@ const updateMetadata = async (metadata, key, bucket = thisBucket) => {
   return s3.copyObject(params).promise();
 };
 
+const deleteObject = (key, bucket = thisBucket) => new Promise((resolve, reject) => {
+  const params = { Bucket: bucket, Key: key };
+  return s3.deleteObject(params).then((data) => {
+    resolve(data);
+  }).catch((err) => {
+    if (err.code === 'NotFound') {
+      resolve(undefined);
+    } else {
+      reject(err);
+    }
+  });
+});
+
 module.exports = {
   setBucket,
   bucketExists,
@@ -174,4 +187,5 @@ module.exports = {
   putDir,
   putObject,
   updateMetadata,
+  deleteObject,
 };

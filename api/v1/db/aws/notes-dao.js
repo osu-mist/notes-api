@@ -1,16 +1,10 @@
-const appRoot = require('app-root-path');
-const config = require('config');
 const _ = require('lodash');
 const moment = require('moment');
 const uuidv4 = require('uuid/v4');
 
 const awsOps = require('./aws-operations');
-// TODO: remove
-const fsOps = appRoot.require('api/v1/db/json/fs-operations');
 const { serializeNote, serializeNotes } = require('../../serializers/notes-serializer');
 
-// TODO: remove
-const { dbDirectoryPath } = config.get('api');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
 
@@ -182,33 +176,33 @@ const postNote = async (body) => {
  * @param body
  * @returns {Promise} Promise object that represents the patched note
  */
-const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
-  try {
-    const rawNote = fetchNote(noteID);
-    if (!rawNote) {
-      resolve(undefined);
-    }
-
-    const { note, permissions } = body;
-    rawNote.note = note || rawNote.note;
-    rawNote.permissions = permissions || rawNote.permissions;
-
-    writeNote(noteID, rawNote);
-    resolve(getNoteByID(noteID));
-  } catch (err) {
-    reject(err);
+const patchNoteByID = async (noteID, body) => {
+  const rawNote = await fetchNote(noteID);
+  if (!rawNote) {
+    return undefined;
   }
-});
 
-const deleteNoteByID = noteID => new Promise((resolve, reject) => {
-  try {
-    const studentID = parseStudentID(noteID);
-    const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-    resolve(fsOps.deleteFile(noteFilePath));
-  } catch (err) {
-    reject(err);
-  }
-});
+  console.log(JSON.stringify(body, null, 2));
+
+  const { note, permissions } = body;
+  rawNote.note = note || rawNote.note;
+  rawNote.permissions = permissions || rawNote.permissions;
+
+  await writeNote(noteID, rawNote);
+  return getNoteByID(noteID);
+};
+
+/**
+ * @summary Delete a note by noteID
+ * @function
+ * @param noteID
+ * @returns undefined if object was not found
+ */
+const deleteNoteByID = async (noteID) => {
+  const studentID = parseStudentID(noteID);
+  const key = `${studentID}/${noteID}.json`;
+  await awsOps.deleteObject(key);
+};
 
 module.exports = {
   getNotes,
