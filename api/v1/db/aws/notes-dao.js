@@ -182,8 +182,6 @@ const patchNoteByID = async (noteID, body) => {
     return undefined;
   }
 
-  console.log(JSON.stringify(body, null, 2));
-
   const { note, permissions } = body;
   rawNote.note = note || rawNote.note;
   rawNote.permissions = permissions || rawNote.permissions;
