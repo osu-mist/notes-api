@@ -44,6 +44,7 @@
     "simple-git": "^1.96.0",
     "sinon": "^7.2.2",
     "swagger-parser": "^6.0.3",
+    "uuid": "^3.3.2",
     "winston": "^3.1.0",
     "winston-daily-rotate-file": "^3.3.2"
   },

@@ -2,6 +2,7 @@ const appRoot = require('app-root-path');
 const config = require('config');
 const _ = require('lodash');
 const moment = require('moment');
+const uuidv4 = require('uuid/v4');
 
 const awsOps = require('./aws-operations');
 // TODO: remove
@@ -12,7 +13,6 @@ const { serializeNote, serializeNotes } = require('../../serializers/notes-seria
 const { dbDirectoryPath } = config.get('api');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
-const counterMetadataKey = 'x-amz-meta-counter';
 
 /**
  * @summary Parses studentID from noteID
@@ -21,17 +21,6 @@ const counterMetadataKey = 'x-amz-meta-counter';
  * @returns {string}
  */
 const parseStudentID = noteID => noteID.split('-')[0];
-
-/**
- * @summary Increment the counter
- * @function
- * @param {string} studentDirKey
- * @param {string} counter
- */
-const incrementCounter = async (studentDirKey, counter) => {
-  const newCounter = (parseInt(counter, 10) + 1).toString();
-  await awsOps.updateMetadata({ [counterMetadataKey]: newCounter }, studentDirKey);
-};
 
 /**
  * @summary Fetch a note from the database by its noteID
@@ -164,13 +153,12 @@ const postNote = async (body) => {
   } : null;
 
   const studentDirKey = `${studentID}/`;
+  // Create student ID directory if it doesn't exist
   if (!await awsOps.objectExists(studentDirKey)) {
-    await awsOps.putDir(studentDirKey, { Metadata: { [counterMetadataKey]: '1' } });
+    await awsOps.putDir(studentDirKey);
   }
 
-  const head = await awsOps.headObject(studentDirKey);
-  const counter = head.Metadata[counterMetadataKey];
-  const noteID = `${studentID}-${counter}`;
+  const noteID = `${studentID}-${uuidv4()}`;
 
   const newNote = {
     id: noteID,
@@ -184,7 +172,6 @@ const postNote = async (body) => {
   newNote.lastModified = newNote.dateCreated;
 
   await writeNote(noteID, newNote, true);
-  await incrementCounter(studentDirKey, counter);
   return getNoteByID(noteID);
 };
 
