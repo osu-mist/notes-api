@@ -1,22 +1,9 @@
 const AWS = require('aws-sdk');
 const config = require('config');
 
-const {
-  accessKeyId,
-  secretAccessKey,
-  region,
-  endpoint,
-  s3ForcePathStyle,
-} = config.get('aws');
+const awsConfig = config.get('aws');
 
-const s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  accessKeyId,
-  secretAccessKey,
-  region,
-  endpoint,
-  s3ForcePathStyle,
-});
+const s3 = new AWS.S3(awsConfig);
 let thisBucket = null;
 
 /**
