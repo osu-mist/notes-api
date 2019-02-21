@@ -82,12 +82,21 @@ const listObjects = (params = {}, bucket = thisBucket) => {
  * @function
  * @param {string} key The key of the object
  * @param {string} bucket The bucket where the object exists
- * @returns {Promise} Promise object representing the object response
+ * @returns {Promise} Promise object representing the object response. undefined if the object does
+ * not exist
  */
-const getObject = (key, bucket = thisBucket) => {
+const getObject = (key, bucket = thisBucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
-  return s3.getObject(params).promise();
-};
+  s3.getObject(params).promise.then((data) => {
+    resolve(data);
+  }).catch((err) => {
+    if (err.code === 'NotFound') {
+      resolve(undefined);
+    } else {
+      reject(err);
+    }
+  });
+});
 
 /**
  * @summary Uploads a new directory object to a bucket

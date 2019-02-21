@@ -9,40 +9,40 @@ const { serializeNote, serializeNotes } = require('../../serializers/notes-seria
 const localSourceName = 'advisorPortal';
 
 /**
- * @summary Parses studentID from noteID
+ * @summary Parses studentId from noteId
  * @function
- * @param noteID
+ * @param noteId
  * @returns {string}
  */
-const parseStudentID = noteID => noteID.split('-')[0];
+const parseStudentId = noteId => noteId.split('-')[0];
 
 /**
- * @summary Fetch a note from the database by its noteID
+ * @summary Fetch a note from the database by its noteId
  * @function
- * @param noteID
+ * @param noteId
  * @returns {Object} The raw note from the DB
  */
-const fetchNote = async (noteID) => {
-  const studentID = parseStudentID(noteID);
-  const key = `${studentID}/${noteID}.json`;
+const fetchNote = async (noteId) => {
+  const studentId = parseStudentId(noteId);
+  const key = `${studentId}/${noteId}.json`;
 
-  if (!await awsOps.objectExists(key)) {
+  const object = await awsOps.getObject(key);
+  if (object === undefined) {
     return undefined;
   }
-  const object = await awsOps.getObject(key);
   return JSON.parse(object.Body.toString('utf8'));
 };
 
 /**
- * @summary Write newContents to the note with id noteID
+ * @summary Write newContents to the note with id noteId
  * @function
- * @param {string} noteID
+ * @param {string} noteId
  * @param {Object} newContents
  * @param {boolean} failIfExists If true, the method will throw an error if the note already exists
  */
-const writeNote = async (noteID, newContents, failIfExists = false) => {
-  const studentID = parseStudentID(noteID);
-  const key = `${studentID}/${noteID}.json`;
+const writeNote = async (noteId, newContents, failIfExists = false) => {
+  const studentId = parseStudentId(noteId);
+  const key = `${studentId}/${noteId}.json`;
   if (failIfExists && await awsOps.objectExists(key)) {
     throw new Error(`Error: object with key: "${key}" was not expected to exist`);
   }
@@ -61,14 +61,14 @@ const filterNotes = (rawNotes, queryParams) => {
   const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
 
   const {
-    creatorID,
+    creatorId,
     q,
     sources,
     sortKey,
     contextTypes,
   } = queryParams;
 
-  rawNotes = creatorID ? _.filter(rawNotes, it => it.creatorID === creatorID) : rawNotes;
+  rawNotes = creatorId ? _.filter(rawNotes, it => it.creatorId === creatorId) : rawNotes;
 
   rawNotes = contextTypes
     ? _.filter(rawNotes, it => _.includes(contextTypes, getContextType(it)))
@@ -91,12 +91,12 @@ const filterNotes = (rawNotes, queryParams) => {
  * @returns {Promise} Promise object represents a list of notes
  */
 const getNotes = async (query) => {
-  const { studentID } = query;
-  const prefix = `${studentID}/`;
+  const { studentId } = query;
+  const prefix = `${studentId}/`;
   const objects = await awsOps.listObjects({ Prefix: prefix });
 
   const objectKeys = _.map(objects.Contents, it => it.Key);
-  _.remove(objectKeys, it => it[it.length - 1] === '/');
+  _.remove(objectKeys, it => _.last(it) === '/');
 
   let rawNotes = [];
   await Promise.all(_.map(objectKeys, async (it) => {
@@ -113,14 +113,14 @@ const getNotes = async (query) => {
 };
 
 /**
- * @summary Return a specific note by noteID
+ * @summary Return a specific note by noteId
  * @function
- * @param {string} noteID id of the note in the form: '{studentID}-{number}'
+ * @param {string} noteId id of the note in the form: '{studentId}-{number}'
  * @returns {Promise} Promise object represents a specific note
  */
-const getNoteByID = async (noteID) => {
-  const rawNote = await fetchNote(noteID);
-  if (!rawNote) {
+const getNoteById = async (noteId) => {
+  const rawNote = await fetchNote(noteId);
+  if (rawNote === undefined) {
     return undefined;
   }
   rawNote.source = localSourceName;
@@ -136,49 +136,49 @@ const getNoteByID = async (noteID) => {
  */
 const postNote = async (body) => {
   const { attributes } = body.data;
-  const { note, studentID, creatorID } = attributes;
+  const { note, studentId, creatorId } = attributes;
 
   // express-openapi does not correctly handle this default value so it must be specified manually
   const permissions = attributes.permissions || 'advisor';
   // ignore additional fields in context
   const context = attributes.context ? {
     contextType: attributes.context.contextType,
-    contextID: attributes.context.contextID,
+    contextId: attributes.context.contextId,
   } : null;
 
-  const studentDirKey = `${studentID}/`;
+  const studentDirKey = `${studentId}/`;
   // Create student ID directory if it doesn't exist
   if (!await awsOps.objectExists(studentDirKey)) {
     await awsOps.putDir(studentDirKey);
   }
 
-  const noteID = `${studentID}-${uuidv4()}`;
+  const noteId = `${studentId}-${uuidv4()}`;
 
   const newNote = {
-    id: noteID,
+    id: noteId,
     note,
-    studentID,
-    creatorID,
+    studentId,
+    creatorId,
     permissions,
     context,
   };
   newNote.dateCreated = moment().toISOString();
   newNote.lastModified = newNote.dateCreated;
 
-  await writeNote(noteID, newNote, true);
-  return getNoteByID(noteID);
+  await writeNote(noteId, newNote, true);
+  return getNoteById(noteId);
 };
 
 /**
- * @summary Patch a note by noteID
+ * @summary Patch a note by noteId
  * @function
- * @param noteID
+ * @param noteId
  * @param body
  * @returns {Promise} Promise object that represents the patched note
  */
-const patchNoteByID = async (noteID, body) => {
-  const rawNote = await fetchNote(noteID);
-  if (!rawNote) {
+const patchNoteById = async (noteId, body) => {
+  const rawNote = await fetchNote(noteId);
+  if (rawNote === undefined) {
     return undefined;
   }
 
@@ -186,19 +186,19 @@ const patchNoteByID = async (noteID, body) => {
   rawNote.note = note || rawNote.note;
   rawNote.permissions = permissions || rawNote.permissions;
 
-  await writeNote(noteID, rawNote);
-  return getNoteByID(noteID);
+  await writeNote(noteId, rawNote);
+  return getNoteById(noteId);
 };
 
 /**
- * @summary Delete a note by noteID
+ * @summary Delete a note by noteId
  * @function
- * @param noteID
+ * @param noteId
  * @returns undefined if object was not found
  */
-const deleteNoteByID = async (noteID) => {
-  const studentID = parseStudentID(noteID);
-  const key = `${studentID}/${noteID}.json`;
+const deleteNoteById = async (noteId) => {
+  const studentId = parseStudentId(noteId);
+  const key = `${studentId}/${noteId}.json`;
   const res = await awsOps.deleteObject(key);
   if (res === undefined) {
     return undefined;
@@ -209,8 +209,8 @@ const deleteNoteByID = async (noteID) => {
 module.exports = {
   getNotes,
   postNote,
-  getNoteByID,
-  patchNoteByID,
+  getNoteById,
+  patchNoteById,
   filterNotes,
-  deleteNoteByID,
+  deleteNoteById,
 };
