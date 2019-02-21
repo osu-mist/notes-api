@@ -199,7 +199,11 @@ const patchNoteByID = async (noteID, body) => {
 const deleteNoteByID = async (noteID) => {
   const studentID = parseStudentID(noteID);
   const key = `${studentID}/${noteID}.json`;
-  await awsOps.deleteObject(key);
+  const res = await awsOps.deleteObject(key);
+  if (res === undefined) {
+    return undefined;
+  }
+  return true;
 };
 
 module.exports = {

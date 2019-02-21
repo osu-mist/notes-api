@@ -146,6 +146,8 @@ paths:
       summary: Edit an existing note
       tags:
         - notes
+      consumes:
+        - application/json
       operationId: patchNoteByID
       parameters:
         - in: body

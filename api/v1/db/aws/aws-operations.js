@@ -166,7 +166,7 @@ const updateMetadata = async (metadata, key, bucket = thisBucket) => {
 
 const deleteObject = (key, bucket = thisBucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
-  return s3.deleteObject(params).then((data) => {
+  s3.deleteObject(params).promise().then((data) => {
     resolve(data);
   }).catch((err) => {
     if (err.code === 'NotFound') {
