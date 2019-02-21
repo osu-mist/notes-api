@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const config = require('config');
+const _ = require('lodash');
 
 const awsConfig = config.get('aws');
 
@@ -107,7 +108,7 @@ const getObject = (key, bucket = thisBucket) => new Promise((resolve, reject) =>
  * @returns {Promise} Promise object representing the response
  */
 const putDir = (key, params = {}, bucket = thisBucket) => {
-  if (key[key.length - 1] !== '/') {
+  if (_.last(key) !== '/') {
     throw new Error(`Error: directory key: "${key}" does not end with "/"`);
   }
   const newParams = Object.assign(
