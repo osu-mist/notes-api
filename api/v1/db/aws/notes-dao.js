@@ -38,14 +38,10 @@ const fetchNote = async (noteId) => {
  * @function
  * @param {string} noteId
  * @param {Object} newContents
- * @param {boolean} failIfExists If true, the method will throw an error if the note already exists
  */
-const writeNote = async (noteId, newContents, failIfExists = false) => {
+const writeNote = async (noteId, newContents) => {
   const studentId = parseStudentId(noteId);
   const key = `${studentId}/${noteId}.json`;
-  if (failIfExists && await awsOps.objectExists(key)) {
-    throw new Error(`Error: object with key: "${key}" was not expected to exist`);
-  }
   await awsOps.putObject(newContents, key);
 };
 
@@ -165,7 +161,7 @@ const postNote = async (body) => {
   newNote.dateCreated = moment().toISOString();
   newNote.lastModified = newNote.dateCreated;
 
-  await writeNote(noteId, newNote, true);
+  await writeNote(noteId, newNote);
   return getNoteById(noteId);
 };
 
