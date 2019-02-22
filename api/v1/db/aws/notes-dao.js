@@ -27,10 +27,7 @@ const fetchNote = async (noteId) => {
   const key = `${studentId}/${noteId}.json`;
 
   const object = await awsOps.getObject(key);
-  if (object === undefined) {
-    return undefined;
-  }
-  return JSON.parse(object.Body.toString('utf8'));
+  return object === undefined ? undefined : JSON.parse(object.Body.toString('utf8'));
 };
 
 /**
@@ -196,10 +193,7 @@ const deleteNoteById = async (noteId) => {
   const studentId = parseStudentId(noteId);
   const key = `${studentId}/${noteId}.json`;
   const res = await awsOps.deleteObject(key);
-  if (res === undefined) {
-    return undefined;
-  }
-  return true;
+  return res === undefined ? undefined : true;
 };
 
 module.exports = {
