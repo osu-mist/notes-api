@@ -65,7 +65,7 @@ const getNotes = query => new Promise((resolve, reject) => {
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
-      const rawNote = fsOps.readJSONFile(`${studentDirPath}/${file}`);
+      const rawNote = fsOps.readJsonFile(`${studentDirPath}/${file}`);
       rawNote.source = localSourceName;
       rawNotes.push(rawNote);
     });
@@ -88,7 +88,7 @@ const fetchNote = (noteID) => {
   try {
     const studentID = parseStudentID(noteID);
     const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    return fsOps.readJSONFile(`${studentDirPath}/${noteID}.json`);
+    return fsOps.readJsonFile(`${studentDirPath}/${noteID}.json`);
   } catch (err) {
     return null;
   }
@@ -106,7 +106,7 @@ const writeNote = (noteID, newContents, failIfExists = false) => {
   const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
   const studentID = parseStudentID(noteID);
   const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-  fsOps.writeJSONFile(noteFilePath, newContents, options);
+  fsOps.writeJsonFile(noteFilePath, newContents, options);
 };
 
 /**

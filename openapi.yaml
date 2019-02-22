@@ -29,13 +29,13 @@ paths:
         - notes
       operationId: getNotes
       parameters:
-        - name: studentID
+        - name: studentId
           in: query
           type: string
           pattern: ^\d{9}$
           required: true
           description: 9-digit OSU ID of student whose notes will be retrieved
-        - name: creatorID
+        - name: creatorId
           in: query
           type: string
           pattern: ^\d{9}$
@@ -120,22 +120,22 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
-  /notes/{noteID}:
+  /notes/{noteId}:
     parameters:
       - $ref: '#/parameters/authorization'
-      - $ref: '#/parameters/noteID'
+      - $ref: '#/parameters/noteId'
     get:
-      summary: Get a note by its noteID
+      summary: Get a note by its noteId
       tags:
         - notes
-      operationId: getNoteByID
+      operationId: getNoteById
       responses:
         200:
           description: Successfully retrieved note
           schema:
             $ref: '#/definitions/NoteResult'
         404:
-          description: Note with this noteID not found
+          description: Note with this noteId not found
           schema:
             $ref: '#/definitions/Errors'
         500:
@@ -146,7 +146,9 @@ paths:
       summary: Edit an existing note
       tags:
         - notes
-      operationId: patchNoteByID
+      consumes:
+        - application/json
+      operationId: patchNoteById
       parameters:
         - in: body
           name: requestBody
@@ -179,7 +181,7 @@ paths:
       summary: Delete an existing note
       tags:
         - notes
-      operationId: deleteNoteByID
+      operationId: deleteNoteById
       responses:
         204:
           description: Successfully deleted the note
@@ -192,8 +194,8 @@ paths:
           schema:
             $ref: '#/definitions/Errors'
 parameters:
-  noteID:
-    name: noteID
+  noteId:
+    name: noteId
     in: path
     type: string
     required: true
@@ -208,7 +210,7 @@ definitions:
   NoteResource:
     properties:
       id:
-        $ref: '#/definitions/noteID'
+        $ref: '#/definitions/noteId'
       type:
         $ref: '#/definitions/noteType'
       attributes:
@@ -216,10 +218,10 @@ definitions:
         properties:
           note:
             $ref: '#/definitions/note'
-          studentID:
-            $ref: '#/definitions/studentID'
-          creatorID:
-            $ref: '#/definitions/creatorID'
+          studentId:
+            $ref: '#/definitions/studentId'
+          creatorId:
+            $ref: '#/definitions/creatorId'
           source:
             $ref: '#/definitions/source'
           permissions:
@@ -258,18 +260,18 @@ definitions:
             properties:
               note:
                 $ref: '#/definitions/note'
-              studentID:
-                $ref: '#/definitions/studentID'
-              creatorID:
-                $ref: '#/definitions/creatorID'
+              studentId:
+                $ref: '#/definitions/studentId'
+              creatorId:
+                $ref: '#/definitions/creatorId'
               permissions:
                 $ref: '#/definitions/permissions'
               context:
                 $ref: '#/definitions/context'
             required:
               - note
-              - studentID
-              - creatorID
+              - studentId
+              - creatorId
             additionalProperties: false
         required:
           - type
@@ -314,20 +316,20 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Error'
-  noteID:
+  noteId:
     type: string
-    description: A unique ID of a note concatenating the student ID that the note is for with an integer
-    example: 123456789-123
+    description: A unique ID of a note concatenating the student ID that the note is for with a random string
+    example: 123456789-123-abc
   note:
     type: string
     maxLength: 150
     description: The contents of the note
-  studentID:
+  studentId:
     type: string
     pattern: ^\d{9}$
     description: The 9-digit OSU ID of the student who the note is on
     example: '123456789'
-  creatorID:
+  creatorId:
     type: string
     pattern: ^\d{9}$
     description: The 9-digit OSU ID of the advisor who created the note
@@ -357,13 +359,13 @@ definitions:
         type: string
         description: The context type of the note
         example: 'course'
-      contextID:
+      contextId:
         type: string
         description: The context id of the note
         example: 'CS-101'
     required:
       - contextType
-      - contextID
+      - contextId
   dateCreated:
     type: string
     format: date-time

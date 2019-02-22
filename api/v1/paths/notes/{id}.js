@@ -1,16 +1,16 @@
 const appRoot = require('app-root-path');
 
-const notesDAO = require('../../db/json/notes-dao');
+const notesDAO = require('../../db/aws/notes-dao');
 
 const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
 const { openapi: { paths } } = appRoot.require('utils/load-openapi');
 
-const notFoundMessage = 'A note with the specified noteID was not found.';
+const notFoundMessage = 'A note with the specified noteId was not found.';
 
 const get = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await notesDAO.getNoteByID(id);
+    const result = await notesDAO.getNoteById(id);
     if (result === undefined) {
       errorBuilder(res, 404, notFoundMessage);
     } else {
@@ -28,9 +28,9 @@ const patch = async (req, res) => {
   try {
     const { id } = req.params;
     const { body } = req;
-    const result = await notesDAO.patchNoteByID(id, body);
+    const result = await notesDAO.patchNoteById(id, body);
     if (result === undefined) {
-      errorBuilder(res, 404, 'A note with the specified noteID was not found.');
+      errorBuilder(res, 404, 'A note with the specified noteId was not found.');
     } else {
       res.send(result);
     }
@@ -42,7 +42,7 @@ const patch = async (req, res) => {
 const del = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await notesDAO.deleteNoteByID(id);
+    const result = await notesDAO.deleteNoteById(id);
     if (result === undefined) {
       errorBuilder(res, 404, notFoundMessage);
     } else {
@@ -53,8 +53,8 @@ const del = async (req, res) => {
   }
 };
 
-get.apiDoc = paths['/notes/{noteID}'].get;
-patch.apiDoc = paths['/notes/{noteID}'].patch;
-del.apiDoc = paths['/notes/{noteID}'].del;
+get.apiDoc = paths['/notes/{noteId}'].get;
+patch.apiDoc = paths['/notes/{noteId}'].patch;
+del.apiDoc = paths['/notes/{noteId}'].del;
 
 module.exports = { get, patch, del };

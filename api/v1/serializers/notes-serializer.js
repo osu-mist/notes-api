@@ -1,6 +1,6 @@
 const appRoot = require('app-root-path');
 const _ = require('lodash');
-const JSONAPISerializer = require('jsonapi-serializer').Serializer;
+const JsonApiSerializer = require('jsonapi-serializer').Serializer;
 
 const { serializerOptions } = appRoot.require('utils/jsonapi');
 const { openapi } = appRoot.require('utils/load-openapi');
@@ -27,8 +27,8 @@ const getSerializerArgs = topLevelSelfLink => (
   }
 );
 
-const getJSONAPISerializer = (serializerArgs, data) => (
-  new JSONAPISerializer(
+const getJsonApiSerializer = (serializerArgs, data) => (
+  new JsonApiSerializer(
     noteResourceType,
     serializerOptions(serializerArgs),
   ).serialize(data)
@@ -44,7 +44,7 @@ const getJSONAPISerializer = (serializerArgs, data) => (
 const serializeNotes = (rawNotes, query) => {
   const topLevelSelfLink = paramsLink(noteResourceUrl, query);
   const serializerArgs = getSerializerArgs(topLevelSelfLink);
-  return getJSONAPISerializer(serializerArgs, rawNotes);
+  return getJsonApiSerializer(serializerArgs, rawNotes);
 };
 
 /**
@@ -56,6 +56,6 @@ const serializeNotes = (rawNotes, query) => {
 const serializeNote = (rawNote) => {
   const topLevelSelfLink = resourcePathLink(noteResourceUrl, rawNote.id);
   const serializerArgs = getSerializerArgs(topLevelSelfLink);
-  return getJSONAPISerializer(serializerArgs, rawNote);
+  return getJsonApiSerializer(serializerArgs, rawNote);
 };
 module.exports = { serializeNotes, serializeNote };
