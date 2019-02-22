@@ -18,17 +18,9 @@ logger:
   pattern: YYYY-MM-DD
   archive: true
 
-database:
-  connectString: ${DB_URL}
-  user: ${DB_USER}
-  password: ${DB_PASSWD}
-  poolMin: 4
-  poolMax: 4
-  poolIncrement: 0
-
 api:
-  # Valid options are "AWS" and "local"
-  dataSource: AWS
+  # Valid options are "aws" and "local"
+  dataSource: aws
   awsBucket: aws-bucket-name
   dbDirectoryPath: /path/to/json/database
 

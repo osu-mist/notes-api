@@ -12,7 +12,7 @@ const { dataSource } = config.get('api');
  */
 const validateDataSource = async () => {
   try {
-    if (dataSource === 'AWS') {
+    if (dataSource === 'aws') {
       const { awsBucket } = config.get('api');
       if (!(await bucketExists(awsBucket))) {
         console.error('Error: AWS bucket does not exist');
@@ -24,7 +24,7 @@ const validateDataSource = async () => {
       const { dbDirectoryPath } = config.get('api');
       await validateDBPath(dbDirectoryPath);
     } else {
-      console.error('Error: invalid option for api.dataSource. Valid options are "AWS" and "local"');
+      console.error('Error: invalid option for api.dataSource. Valid options are "aws" and "local"');
       process.exit(1);
     }
   } catch (err) {
