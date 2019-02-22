@@ -21,8 +21,8 @@ logger:
 api:
   # Valid options are "aws" and "local"
   dataSource: aws
-  awsBucket: aws-bucket-name
-  dbDirectoryPath: /path/to/json/database
+  awsBucket: {AWS_BUCKET}
+  dbDirectoryPath: {DB_PATH}
 
 aws:
   apiVersion: '2006-03-01'
