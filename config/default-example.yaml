@@ -26,8 +26,8 @@ api:
 
 aws:
   apiVersion: '2006-03-01'
-  accessKeyId: access-key-id
-  secretAccessKey: secret-access-key
+  accessKeyId: ${ACCESS_KEY_ID}
+  secretAccessKey: ${SECRET_ACCESS_KEY}
   region: us-west-2
   # These values are for testing on local or proxy S3 instances
   endpoint: null
