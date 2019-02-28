@@ -1,8 +1,8 @@
 FROM node:10.13
 
 # Copy folder to workspace
-WORKDIR /usr/src/express-api-skeleton
-COPY . /usr/src/express-api-skeleton
+WORKDIR /usr/src/notes-api
+COPY . /usr/src/notes-api
 
 # The following lines are commented out by default since not all APIs require
 # Oracle Instant Client. Uncomment the codes if you needed.

@@ -1,16 +1,16 @@
 server:
   protocol: https
   hostname: ${API_HOSTNAME}
-  port: ${API_PORT}
-  adminPort: ${API_ADMIN_PORT}
+  port: ${PORT}
+  adminPort: ${ADMIN_PORT}
   basePathPrefix: /api
   keyPath: /path/to/key.pem
   certPath: /path/to/server.crt
   secureProtocol: TLSv1_2_method
 
 authentication:
-  username: ${API_USER}
-  password: ${API_PASSWD}
+  username: ${USER}
+  password: ${PASSWD}
 
 logger:
   size: 10m
@@ -21,13 +21,13 @@ logger:
 api:
   # Valid options are "aws" and "local"
   dataSource: aws
-  awsBucket: aws-bucket-name
-  dbDirectoryPath: /path/to/json/database
+  awsBucket: {AWS_BUCKET}
+  dbDirectoryPath: {DB_PATH}
 
 aws:
   apiVersion: '2006-03-01'
-  accessKeyId: access-key-id
-  secretAccessKey: secret-access-key
+  accessKeyId: ${ACCESS_KEY_ID}
+  secretAccessKey: ${SECRET_ACCESS_KEY}
   region: us-west-2
   # These values are for testing on local or proxy S3 instances
   endpoint: null

@@ -1,13 +1,16 @@
 server:
   hostname: 'API_HOSTNAME'
-  port: 'API_PORT'
-  adminPort: 'API_ADMIN_PORT'
+  port: 'PORT'
+  adminPort: 'ADMIN_PORT'
 
 authentication:
-  username: 'API_USER'
-  password: 'API_PASSWD'
+  username: 'USER'
+  password: 'PASSWD'
 
-database:
-  connectString: 'DB_URL'
-  user: 'DB_USER'
-  password: 'DB_PASSWD'
+aws:
+  accessKeyId: 'ACCESS_KEY_ID'
+  secretAccessKey: 'SECRET_ACCESS_KEY'
+
+api:
+  awsBucket: 'AWS_BUCKET'
+  dbDirectoryPath: 'DB_PATH'

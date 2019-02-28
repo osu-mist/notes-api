@@ -192,8 +192,11 @@ const patchNoteById = async (noteId, body) => {
 const deleteNoteById = async (noteId) => {
   const studentId = parseStudentId(noteId);
   const key = `${studentId}/${noteId}.json`;
-  const res = await awsOps.deleteObject(key);
-  return res === undefined ? undefined : true;
+  if (!await awsOps.objectExists(key)) {
+    return undefined;
+  }
+  await awsOps.deleteObject(key);
+  return true;
 };
 
 module.exports = {

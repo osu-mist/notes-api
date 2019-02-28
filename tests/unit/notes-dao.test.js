@@ -9,12 +9,15 @@ const sinon = require('sinon');
 const testData = require('./test-data');
 
 const fsOps = appRoot.require('api/v1/db/json/fs-operations');
-const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
 
 chai.use(chaiExclude);
 const { assert } = chai;
 
-sinon.replace(config, 'get', property => testData.mockConfig[property]);
+const mockConfig = () => sinon.replace(config, 'get', property => testData.mockConfig[property]);
+
+mockConfig();
+const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
+sinon.restore();
 
 /**
  * @summary Validate the contents of a link
@@ -120,5 +123,7 @@ describe('Test notes-dao', () => {
     });
   });
 });
+
+beforeEach(() => mockConfig());
 
 afterEach(() => sinon.restore());
