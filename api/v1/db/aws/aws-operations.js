@@ -91,7 +91,7 @@ const getObject = (key, bucket = thisBucket) => new Promise((resolve, reject) =>
   s3.getObject(params).promise().then((data) => {
     resolve(data);
   }).catch((err) => {
-    if (err.code === 'NotFound') {
+    if (err.code === 'NoSuchKey') {
       resolve(undefined);
     } else {
       reject(err);
