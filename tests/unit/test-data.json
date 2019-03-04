@@ -12,12 +12,12 @@
     {
       "id": "111111111-1",
       "note": "Test note 1",
-      "studentID": "111111111",
-      "creatorID": "987654321",
+      "studentId": "111111111",
+      "creatorId": "987654321",
       "permissions": "advisor",
       "context": {
         "contextType": "course",
-        "contextID": "CS-101"
+        "contextId": "CS-101"
       },
       "dateCreated": "2017-07-21T17:32:28Z",
       "lastModified": "2017-07-21T17:32:28Z"
@@ -25,8 +25,8 @@
     {
       "id": "111111111-2",
       "note": "Test note 2",
-      "studentID": "111111111",
-      "creatorID": "987654321",
+      "studentId": "111111111",
+      "creatorId": "987654321",
       "permissions": "advisors",
       "context": null,
       "dateCreated": "2018-07-21T17:32:28Z",
@@ -35,12 +35,12 @@
     {
       "id": "111111111-3",
       "note": "Test note 3",
-      "studentID": "111111111",
-      "creatorID": "987654321",
+      "studentId": "111111111",
+      "creatorId": "987654321",
       "permissions": "student",
       "context": {
         "contextType": "term",
-        "contextID": "Fall-2018"
+        "contextId": "Fall-2018"
       },
       "dateCreated": "2016-07-21T17:32:28Z",
       "lastModified": "2018-07-21T17:32:28Z"
@@ -68,8 +68,8 @@
     "data": {
       "attributes": {
         "note": "testNote",
-        "studentID": "000000000",
-        "creatorID": "999999999",
+        "studentId": "000000000",
+        "creatorId": "999999999",
         "context": "null"
       }
     }

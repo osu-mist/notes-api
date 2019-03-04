@@ -1,25 +1,23 @@
-const appRoot = require('app-root-path');
 const config = require('config');
 const fs = require('fs');
 const _ = require('lodash');
 const moment = require('moment');
 const path = require('path');
 
+const fsOps = require('./fs-operations');
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
-
-const fsOps = appRoot.require('utils/fs-operations');
 
 const { dbDirectoryPath } = config.get('api');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
 
 /**
- * @summary Parses studentID from noteID
+ * @summary Parses studentId from noteId
  * @function
- * @param noteID
+ * @param noteId
  * @returns {string}
  */
-const parseStudentID = noteID => noteID.split('-')[0];
+const parseStudentId = noteId => noteId.split('-')[0];
 
 /**
  * @summary Filter notes using parameters
@@ -33,10 +31,10 @@ const filterNotes = (rawNotes, queryParams) => {
   const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
 
   const {
-    creatorID, q, sources, sortKey, contextTypes,
+    creatorId, q, sources, sortKey, contextTypes,
   } = queryParams;
 
-  rawNotes = creatorID ? _.filter(rawNotes, it => it.creatorID === creatorID) : rawNotes;
+  rawNotes = creatorId ? _.filter(rawNotes, it => it.creatorId === creatorId) : rawNotes;
 
   rawNotes = contextTypes
     ? _.filter(rawNotes, it => _.includes(contextTypes, getContextType(it)))
@@ -60,15 +58,15 @@ const filterNotes = (rawNotes, queryParams) => {
  */
 const getNotes = query => new Promise((resolve, reject) => {
   try {
-    const { studentID } = query;
-    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
+    const { studentId } = query;
+    const studentDirPath = `${dbDirectoryPath}/${studentId}`;
     let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
     noteFiles = _.filter(noteFiles, it => path.extname(it).toLowerCase() === '.json');
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
-      const rawNote = fsOps.readJSONFile(`${studentDirPath}/${file}`);
-      rawNotes.source = localSourceName;
+      const rawNote = fsOps.readJsonFile(`${studentDirPath}/${file}`);
+      rawNote.source = localSourceName;
       rawNotes.push(rawNote);
     });
     rawNotes = filterNotes(rawNotes, query);
@@ -81,45 +79,45 @@ const getNotes = query => new Promise((resolve, reject) => {
 });
 
 /**
- * @summary Fetch a note from the database by its noteID
+ * @summary Fetch a note from the database by its noteId
  * @function
- * @param noteID
+ * @param noteId
  * @returns {Object} The raw note from the DB
  */
-const fetchNote = (noteID) => {
+const fetchNote = (noteId) => {
   try {
-    const studentID = parseStudentID(noteID);
-    const studentDirPath = `${dbDirectoryPath}/${studentID}`;
-    return fsOps.readJSONFile(`${studentDirPath}/${noteID}.json`);
+    const studentId = parseStudentId(noteId);
+    const studentDirPath = `${dbDirectoryPath}/${studentId}`;
+    return fsOps.readJsonFile(`${studentDirPath}/${noteId}.json`);
   } catch (err) {
     return null;
   }
 };
 
 /**
- * @summary Write newContents to the note with id noteID
+ * @summary Write newContents to the note with id noteId
  * @function
- * @param noteID
+ * @param noteId
  * @param newContents
  * @param failIfExists If true, the method will throw an error if the file
  *                     already exists
  */
-const writeNote = (noteID, newContents, failIfExists = false) => {
+const writeNote = (noteId, newContents, failIfExists = false) => {
   const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
-  const studentID = parseStudentID(noteID);
-  const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
-  fsOps.writeJSONFile(noteFilePath, newContents, options);
+  const studentId = parseStudentId(noteId);
+  const noteFilePath = `${dbDirectoryPath}/${studentId}/${noteId}.json`;
+  fsOps.writeJsonFile(noteFilePath, newContents, options);
 };
 
 /**
- * @summary Return a specific note by noteID
+ * @summary Return a specific note by noteId
  * @function
- * @param {string} noteID id of the note in the form: '{studentID}-{number}'
+ * @param {string} noteId id of the note in the form: '{studentId}-{number}'
  * @returns {Promise} Promise object represents a specific note
  */
-const getNoteByID = noteID => new Promise((resolve, reject) => {
+const getNoteById = noteId => new Promise((resolve, reject) => {
   try {
-    const rawNote = fetchNote(noteID);
+    const rawNote = fetchNote(noteId);
     if (!rawNote) {
       resolve(undefined);
     }
@@ -142,53 +140,53 @@ const postNote = body => new Promise((resolve, reject) => {
   try {
     const { attributes } = body.data;
     const {
-      note, studentID, creatorID,
+      note, studentId, creatorId,
     } = attributes;
 
     // express-openapi does not correctly handle this default value so it must be specified manually
     const permissions = attributes.permissions || 'advisor';
     // ignore additional fields in context
     const context = attributes.context ? {
-      contextType: attributes.context.contextType, contextID: attributes.context.contextID,
+      contextType: attributes.context.contextType, contextId: attributes.context.contextId,
     } : null;
 
-    const studentDir = `${dbDirectoryPath}/${studentID}`;
+    const studentDir = `${dbDirectoryPath}/${studentId}`;
     const counterFilePath = `${studentDir}/counter.txt`;
     fsOps.initStudentDir(studentDir, counterFilePath);
 
     const counter = fsOps.getCounter(counterFilePath);
-    const noteID = `${studentID}-${counter}`;
+    const noteId = `${studentId}-${counter}`;
 
     const newNote = {
-      id: noteID,
+      id: noteId,
       note,
-      studentID,
-      creatorID,
+      studentId,
+      creatorId,
       permissions,
       context,
     };
     newNote.dateCreated = moment().toISOString();
     newNote.lastModified = newNote.dateCreated;
 
-    writeNote(noteID, newNote, true);
+    writeNote(noteId, newNote, true);
     fsOps.incrementCounter(counterFilePath);
 
-    resolve(getNoteByID(noteID));
+    resolve(getNoteById(noteId));
   } catch (err) {
     reject(err);
   }
 });
 
 /**
- * @summary Patch a note by noteID
+ * @summary Patch a note by noteId
  * @function
- * @param noteID
+ * @param noteId
  * @param body
  * @returns {Promise} Promise object that represents the patched note
  */
-const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
+const patchNoteById = (noteId, body) => new Promise((resolve, reject) => {
   try {
-    const rawNote = fetchNote(noteID);
+    const rawNote = fetchNote(noteId);
     if (!rawNote) {
       resolve(undefined);
     }
@@ -197,17 +195,17 @@ const patchNoteByID = (noteID, body) => new Promise((resolve, reject) => {
     rawNote.note = note || rawNote.note;
     rawNote.permissions = permissions || rawNote.permissions;
 
-    writeNote(noteID, rawNote);
-    resolve(getNoteByID(noteID));
+    writeNote(noteId, rawNote);
+    resolve(getNoteById(noteId));
   } catch (err) {
     reject(err);
   }
 });
 
-const deleteNoteByID = noteID => new Promise((resolve, reject) => {
+const deleteNoteById = noteId => new Promise((resolve, reject) => {
   try {
-    const studentID = parseStudentID(noteID);
-    const noteFilePath = `${dbDirectoryPath}/${studentID}/${noteID}.json`;
+    const studentId = parseStudentId(noteId);
+    const noteFilePath = `${dbDirectoryPath}/${studentId}/${noteId}.json`;
     resolve(fsOps.deleteFile(noteFilePath));
   } catch (err) {
     reject(err);
@@ -217,8 +215,8 @@ const deleteNoteByID = noteID => new Promise((resolve, reject) => {
 module.exports = {
   getNotes,
   postNote,
-  getNoteByID,
-  patchNoteByID,
+  getNoteById,
+  patchNoteById,
   filterNotes,
-  deleteNoteByID,
+  deleteNoteById,
 };

@@ -8,13 +8,16 @@ const sinon = require('sinon');
 
 const testData = require('./test-data');
 
-const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
-const fsOps = appRoot.require('utils/fs-operations');
+const fsOps = appRoot.require('api/v1/db/json/fs-operations');
 
 chai.use(chaiExclude);
 const { assert } = chai;
 
-sinon.replace(config, 'get', property => testData.mockConfig[property]);
+const mockConfig = () => sinon.replace(config, 'get', property => testData.mockConfig[property]);
+
+mockConfig();
+const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
+sinon.restore();
 
 /**
  * @summary Validate the contents of a link
@@ -65,18 +68,18 @@ describe('Test notes-dao', () => {
     it('no optional parameters', async () => {
       sinon.replace(fs, 'existsSync', () => true);
       sinon.replace(fs, 'readdirSync', () => ['test.json']);
-      sinon.replace(fsOps, 'readJSONFile', () => testData.validNotes[0]);
-      const result = await notesDAO.getNotes({ studentID: '111111111' });
+      sinon.replace(fsOps, 'readJsonFile', () => testData.validNotes[0]);
+      const result = await notesDAO.getNotes({ studentId: '111111111' });
       assert.hasAllKeys(result, ['data', 'links']);
-      validateLink(result.links.self, '?studentID=111111111');
+      validateLink(result.links.self, '?studentId=111111111');
       assert.deepEqualExcluding(result.data[0].attributes, testData.validNotes[0], ['id']);
     });
   });
 
-  describe('Test getNoteByID', () => {
+  describe('Test getNoteById', () => {
     it('valid ID', async () => {
-      sinon.replace(fsOps, 'readJSONFile', () => testData.validNotes[0]);
-      const result = await notesDAO.getNoteByID('000000000');
+      sinon.replace(fsOps, 'readJsonFile', () => testData.validNotes[0]);
+      const result = await notesDAO.getNoteById('000000000');
       assert.deepEqualExcluding(result.data.attributes, testData.validNotes[0], ['id']);
     });
   });
@@ -84,12 +87,12 @@ describe('Test notes-dao', () => {
   describe('Test postNote', () => {
     const testAttributes = testData.validPostBody.data.attributes;
     it('valid object', async () => {
-      _.forEach(['writeJSONFile', 'initStudentDir', 'incrementCounter'], (it) => {
+      _.forEach(['writeJsonFile', 'initStudentDir', 'incrementCounter'], (it) => {
         sinon.replace(fsOps, it, () => null);
       });
       sinon.replace(fsOps, 'getCounter', () => '0');
       sinon.replace(
-        fsOps, 'readJSONFile', () => Object.assign({ id: '000000000' }, testAttributes),
+        fsOps, 'readJsonFile', () => Object.assign({ id: '000000000' }, testAttributes),
       );
       const result = await notesDAO.postNote(testData.validPostBody);
       assert.deepEqualExcluding(result.data.attributes, testAttributes, ['source']);
@@ -98,27 +101,29 @@ describe('Test notes-dao', () => {
     });
   });
 
-  describe('Test patchNoteByID', () => {
+  describe('Test patchNoteById', () => {
     const testAttributes = testData.validPatchBody.data.attributes;
     it('valid object, valid ID', async () => {
-      sinon.replace(fsOps, 'writeJSONFile', () => null);
+      sinon.replace(fsOps, 'writeJsonFile', () => null);
       sinon.replace(
-        fsOps, 'readJSONFile', () => Object.assign({ id: '000000000' }, testAttributes),
+        fsOps, 'readJsonFile', () => Object.assign({ id: '000000000' }, testAttributes),
       );
-      const result = await notesDAO.patchNoteByID('000000000', testAttributes);
+      const result = await notesDAO.patchNoteById('000000000', testAttributes);
       _.forEach(['note', 'permissions'], (it) => {
         assert.equal(result.data.attributes[it], testAttributes[it]);
       });
     });
   });
 
-  describe('Test deleteNoteByID', () => {
+  describe('Test deleteNoteById', () => {
     it('valid ID', async () => {
       sinon.replace(fsOps, 'deleteFile', () => true);
-      const result = await notesDAO.deleteNoteByID('000000000');
+      const result = await notesDAO.deleteNoteById('000000000');
       assert.equal(result, true);
     });
   });
 });
+
+beforeEach(() => mockConfig());
 
 afterEach(() => sinon.restore());
