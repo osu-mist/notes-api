@@ -52,6 +52,18 @@ class integration_tests(unittest.TestCase):
             note_schema = utils.get_resource_schema(self, 'Error')
             utils.check_schema(self, response, note_schema)
 
+    # /notes?studentId=111111111
+    def test_get_notes_query(self, endpoint='/notes'):
+        for student_id in self.test_cases['valid_student_id_querry']:
+            params = {'studentId': student_id}
+            response = utils.make_request(self, endpoint, 200, params=params)
+            note_schema = utils.get_resource_schema(self, 'NoteResource')
+            utils.check_schema(self, response, note_schema)
+            # Validating the note id requested is the same note id received
+            for resource in response.json()['data']:
+                attributes = resource['attributes']
+                actual_student_id = attributes['studentId']
+                self.assertEqual(actual_student_id, student_id)
 
 if __name__ == '__main__':
     arguments, argv = utils.parse_arguments()
