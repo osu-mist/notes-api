@@ -15,8 +15,10 @@
       "client_secret": "client_secret"
     }
   },
-  "test_cases": {
-    "valid_pet_ids": ["1", "2", "3"],
-    "invalid_pet_ids": ["999", "-1", "invalid_id"]
+  "test_cases": { 
+    "valid_notes_id_in_path": ["111111111-2", "111111111-1", "111111111-3"],
+    "invalid_notes_id_in_path": ["111111111", "Hello", "-123"],
+    "valid_student_id_querry": ["111111111", "123456789"],
+    "invalid_student_id_querry": ["1234567", "1234567890", "12345678h", "Hello"]
   }
 }
