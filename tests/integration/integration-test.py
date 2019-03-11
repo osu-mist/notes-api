@@ -2,6 +2,7 @@ import json
 import logging
 import unittest
 import yaml
+import random
 
 from prance import ResolvingParser
 
@@ -37,7 +38,7 @@ class integration_tests(unittest.TestCase):
     # Get a note by its noteID
     def test_get_notes_path(self, endpoint='/notes'):
         # valid tests returns 200
-        for note_id in self.test_cases['valid_notes_id_in_path']:
+        for note_id in self.test_cases['valid_notes_id']:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 200)
             schema = utils.get_resource_schema(self, 'NoteResource')
             utils.check_schema(self, response, schema)
@@ -46,8 +47,9 @@ class integration_tests(unittest.TestCase):
             actual_note_id = response_data['id']
             self.assertEqual(actual_note_id, note_id)
 
+        invalid_notes_id = [random.sample(range(1000000000),2)]
         # invalid tests returns 404
-        for note_id in self.test_cases['invalid_notes_id_in_path']:
+        for note_id in self.test_cases['invalid_notes_id']:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 404)
             schema = utils.get_resource_schema(self, 'Error')
             utils.check_schema(self, response, schema)
