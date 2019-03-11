@@ -39,8 +39,8 @@ class integration_tests(unittest.TestCase):
         # valid tests returns 200
         for note_id in self.test_cases['valid_notes_id_in_path']:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 200)
-            note_schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, note_schema)
+            schema = utils.get_resource_schema(self, 'NoteResource')
+            utils.check_schema(self, response, schema)
             # Validating the note id requested is the same note id received
             response_data = response.json()['data']
             actual_note_id = response_data['id']
@@ -49,8 +49,8 @@ class integration_tests(unittest.TestCase):
         # invalid tests returns 404
         for note_id in self.test_cases['invalid_notes_id_in_path']:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 404)
-            note_schema = utils.get_resource_schema(self, 'Error')
-            utils.check_schema(self, response, note_schema)
+            schema = utils.get_resource_schema(self, 'Error')
+            utils.check_schema(self, response, schema)
 
     # /notes?studentId=111111111
     def test_get_notes_query(self, endpoint='/notes'):
