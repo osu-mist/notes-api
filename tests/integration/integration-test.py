@@ -47,9 +47,9 @@ class integration_tests(unittest.TestCase):
             actual_note_id = response_data['id']
             self.assertEqual(actual_note_id, note_id)
 
-        invalid_notes_id = [random.sample(range(1000000000),2)]
+        invalid_notes_id = random.sample(range(930000000, 939999999), 5)
         # invalid tests returns 404
-        for note_id in self.test_cases['invalid_notes_id']:
+        for note_id in invalid_notes_id:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 404)
             schema = utils.get_resource_schema(self, 'Error')
             utils.check_schema(self, response, schema)
