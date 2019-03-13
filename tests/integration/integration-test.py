@@ -44,9 +44,13 @@ class integration_tests(unittest.TestCase):
             response_data = response.json()['data']
             actual_note_id = response_data['id']
             self.assertEqual(actual_note_id, note_id)
+            # Validating the note received belong to the student id
+            student_id = (note_id.split('-'))
+            actual_student_id = response_data['attributes']['studentId']
+            self.assertEqual(actual_student_id, student_id[0])
 
         # invalid tests returns 404
-        invalid_note_ids = ["930000000", "111111111", "Hello", "-123"]
+        invalid_note_ids = ['930000000', '111111111', 'Hello', '-123']
         for note_id in invalid_note_ids:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 404)
             schema = utils.get_resource_schema(self, 'Error')
