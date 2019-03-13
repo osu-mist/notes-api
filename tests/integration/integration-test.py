@@ -79,6 +79,7 @@ class integration_tests(unittest.TestCase):
             self.query_context_types(student_id, context_types)
             self.query_string_search(student_id, notes)
             self.query_source(student_id, sources)
+            self.query_sort_keys(student_id)
     
     def test_get_notes_query_non_existing_student_id(self, endpoint='/notes'):
         for student_id in self.test_cases['non_existing_student_id']:
@@ -143,6 +144,19 @@ class integration_tests(unittest.TestCase):
             for resource in response.json()['data']:
                 actual_source = resource['attributes']['source']
                 self.assertEqual(actual_source, source)
+
+    def query_sort_keys(self, student_id, endpoint='/notes'):
+        sort_keys = ['lastModified', 'source', 'permissions'] # , 'contextType']
+        for sort_key in sort_keys:
+            params = {'studentId': student_id, 'sortKey': sort_key}
+            response = utils.make_request(self, endpoint, 200, params=params)
+            note_schema = utils.get_resource_schema(self, 'NoteResource')
+            utils.check_schema(self, response, note_schema)
+            for resource in response.json()['data']:
+                sorted_element = resource['attributes'][sort_key]
+
+    # def isSorted(x, key = lambda x: x): 
+    #     return all([key(x[i]) <= key(x[i + 1]) for i in xrange(len(x) - 1)])
 
 
 if __name__ == '__main__':
