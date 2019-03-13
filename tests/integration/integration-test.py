@@ -1,12 +1,10 @@
 import json
 import logging
 import unittest
+import utils
 import yaml
-import random
 
 from prance import ResolvingParser
-
-import utils
 
 
 class integration_tests(unittest.TestCase):
@@ -47,8 +45,8 @@ class integration_tests(unittest.TestCase):
             actual_note_id = response_data['id']
             self.assertEqual(actual_note_id, note_id)
 
-        invalid_notes_id = random.sample(range(930000000, 939999999), 5)
         # invalid tests returns 404
+        invalid_notes_id = ["930000000", "111111111", "Hello", "-123"]
         for note_id in invalid_notes_id:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 404)
             schema = utils.get_resource_schema(self, 'Error')
