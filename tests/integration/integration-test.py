@@ -46,7 +46,6 @@ class integration_tests(unittest.TestCase):
             actual_note_id = response_data['id']
             self.assertEqual(actual_note_id, note_id)
             # Validating the note received belong to the student id
-<<<<<<< HEAD
             # fetching the first 9 digits of the note id
             # fails if it does not have 9 digit id
             match_student_id = re.match(r'(?<!\d)\d{9}(?!\d)', note_id)
@@ -54,13 +53,6 @@ class integration_tests(unittest.TestCase):
                 actual_student_id = response_data['attributes']['studentId']
                 self.assertEqual(actual_student_id, match_student_id.group(0))
             else:
-=======
-            try:
-                # fetching the first 9 digits of the note id
-                # fails if it does not have 9 digit id
-                student_id = re.match('\d{9}', note_id).group(0)
-            except (AttributeError, TypeError):
->>>>>>> 7fb6b7023d511cba62e6a43c36624a035a900d43
                 self.fail('Note id don\'t include a 9 digit student id number')
 
         # invalid tests returns 404
