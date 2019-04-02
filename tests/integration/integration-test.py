@@ -46,7 +46,6 @@ class integration_tests(unittest.TestCase):
             actual_note_id = response_data['id']
             self.assertEqual(actual_note_id, note_id)
             # Validating the note received belong to the student id
-            note_id = 1111111111-2
             try:
                 # fetching the first 9 digits of the note id
                 # fails if it does not have 9 digit id
