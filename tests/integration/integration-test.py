@@ -1,7 +1,6 @@
 import json
 import logging
 import random
-import utils
 import unittest
 import utils
 import yaml
@@ -84,7 +83,7 @@ class integration_tests(unittest.TestCase):
             self.query_string_search(student_id, notes)
             self.query_source(student_id, sources)
             self.query_sort_keys(student_id)
-    
+
     def test_get_notes_query_non_existing_student_id(self, endpoint='/notes'):
         for student_id in self.test_cases['non_existing_student_id']:
             params = {'studentId': student_id}
@@ -103,7 +102,7 @@ class integration_tests(unittest.TestCase):
     # /notes?studentId=111111111&creatorId
     def query_creator_id(self, student_id, creator_ids, endpoint='/notes'):
         for creator_id in creator_ids:
-            params = {'studentId': student_id,'creatorId': creator_id}
+            params = {'studentId': student_id, 'creatorId': creator_id}
             response = utils.make_request(self, endpoint, 200, params=params)
             schema = utils.get_resource_schema(self, 'NoteResource')
             utils.check_schema(self, response, schema)
@@ -113,13 +112,14 @@ class integration_tests(unittest.TestCase):
                 self.assertEqual(actual_creator_id, creator_id)
 
     # /notes?studentId=111111111&contextTypes
-    def query_context_types(self, student_id, context_types, endpoint='/notes'):
+    def query_context_type(self, student_id, context_types, endpoint='/notes'):
         for context_type in context_types:
-            params = {'studentId': student_id,'contextTypes': context_type}
+            params = {'studentId': student_id, 'contextTypes': context_type}
             response = utils.make_request(self, endpoint, 200, params=params)
             schema = utils.get_resource_schema(self, 'NoteResource')
             utils.check_schema(self, response, schema)
-            # Validating the contextTypes requested is the same contextTypes received
+            # Validating the contextTypes requested 
+            # is the same contextTypes received
             for resource in response.json()['data']:
                 actual_context_type = resource['attributes']['context']['contextType']
                 self.assertEqual(actual_context_type, context_type)
