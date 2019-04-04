@@ -1,6 +1,8 @@
+from datetime import datetime
 import json
 import logging
 import random
+import re
 import unittest
 import utils
 import yaml
@@ -64,6 +66,7 @@ class integration_tests(unittest.TestCase):
             response = utils.make_request(self, endpoint, 200, params=params)
             note_schema = utils.get_resource_schema(self, 'NoteResource')
             utils.check_schema(self, response, note_schema)
+
             creator_ids = []
             context_types = []
             notes = []
@@ -73,16 +76,24 @@ class integration_tests(unittest.TestCase):
                 attributes = resource['attributes']
                 actual_student_id = attributes['studentId']
                 self.assertEqual(actual_student_id, student_id)
+
+                note_id = resource['id']
+                match_student_id = re.match(r'(^\d{9})(\b-)', note_id)
+                if match_student_id:
+                    self.assertEqual(actual_student_id, match_student_id.group(1))
+                else:
+                    self.fail('Note id don\'t include a 9 digit student id number')
+
                 creator_ids.append(attributes['creatorId'])
                 context_types.append(attributes['context']['contextType'])
                 notes.append(attributes['note'])
                 sources.append(attributes['source'])
 
             self.query_creator_id(student_id, creator_ids)
-            self.query_context_types(student_id, context_types)
             self.query_string_search(student_id, notes)
-            self.query_source(student_id, sources)
             self.query_sort_keys(student_id)
+            self.query_source(student_id, sources)
+            self.query_context_type(student_id, context_types)
 
     def test_get_notes_query_non_existing_student_id(self, endpoint='/notes'):
         for student_id in self.test_cases['non_existing_student_id']:
@@ -111,20 +122,6 @@ class integration_tests(unittest.TestCase):
                 actual_creator_id = resource['attributes']['creatorId']
                 self.assertEqual(actual_creator_id, creator_id)
 
-    # /notes?studentId=111111111&contextTypes
-    def query_context_type(self, student_id, context_types, endpoint='/notes'):
-        for context_type in context_types:
-            params = {'studentId': student_id, 'contextTypes': context_type}
-            response = utils.make_request(self, endpoint, 200, params=params)
-            schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, schema)
-            # Validating the contextTypes requested 
-            # is the same contextTypes received
-            for resource in response.json()['data']:
-                actual_context_type = resource['attributes']['context']['contextType']
-                self.assertEqual(actual_context_type, context_type)
-
-    # /notes?studentId=111111111&q=
     def query_string_search(self, student_id, notes, endpoint='/notes'):
         for note in notes:
             q = random.choice(note.split(' '))
@@ -137,7 +134,44 @@ class integration_tests(unittest.TestCase):
                 actual_note = resource['attributes']['note']
                 self.assertIn(q, actual_note)
 
-    # /notes?studentId=111111111&sources=
+    def query_sort_keys(self, student_id, endpoint='/notes'):
+        sort_keys = ['lastModified', 'source', 'permissions' , 'contextType']
+        for sort_key in sort_keys:
+            params = {'studentId': student_id, 'sortKey': sort_key}
+            response = utils.make_request(self, endpoint, 200, params=params)
+            note_schema = utils.get_resource_schema(self, 'NoteResource')
+            utils.check_schema(self, response, note_schema)
+            if sort_key == 'lastModified':
+                self.check_time_sort(response.json()['data'])
+            elif sort_key == 'source' or sort_key == 'permissions':
+                self.check_alphabetical_sort(response.json()['data'], sort_key)
+            elif sort_key == 'contextType':
+                self.check_context_type_sort(response.json()['data'])
+
+
+    def check_time_sort(self, response):
+        greater_element = datetime.strptime(response[0]['attributes']['lastModified'],
+                                            '%Y-%m-%dT%H:%M:%S.%f%z')
+        for resource in response:
+            current_element =  datetime.strptime(resource['attributes']['lastModified'],
+                                                '%Y-%m-%dT%H:%M:%S.%f%z')
+            self.assertGreaterEqual(greater_element, current_element)
+            greater_element = current_element
+    
+    def check_alphabetical_sort(self, response, sort_key):
+        greater_element = response[0]['attributes'][sort_key]
+        for resource in response:
+            current_element =  resource['attributes'][sort_key]
+            self.assertGreaterEqual(current_element, greater_element)
+            greater_element = current_element
+    
+    def check_context_type_sort(self, response):
+        greater_element = response[0]['attributes']['context']['contextType']
+        for resource in response:
+            current_element =  resource['attributes']['context']['contextType']
+            self.assertGreaterEqual(current_element, greater_element)
+            greater_element = current_element
+
     def query_source(self, student_id, sources, endpoint='/notes'):
         for source in sources:
             params = {'studentId': student_id, 'sources': source}
@@ -149,18 +183,17 @@ class integration_tests(unittest.TestCase):
                 actual_source = resource['attributes']['source']
                 self.assertEqual(actual_source, source)
 
-    def query_sort_keys(self, student_id, endpoint='/notes'):
-        sort_keys = ['lastModified', 'source', 'permissions'] # , 'contextType']
-        for sort_key in sort_keys:
-            params = {'studentId': student_id, 'sortKey': sort_key}
+    def query_context_type(self, student_id, context_types, endpoint='/notes'):
+        for context_type in context_types:
+            params = {'studentId': student_id, 'contextTypes': context_type}
             response = utils.make_request(self, endpoint, 200, params=params)
-            note_schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, note_schema)
+            schema = utils.get_resource_schema(self, 'NoteResource')
+            utils.check_schema(self, response, schema)
+            # Validating the contextTypes requested 
+            # is the same contextTypes received
             for resource in response.json()['data']:
-                sorted_element = resource['attributes'][sort_key]
-
-    # def isSorted(x, key = lambda x: x): 
-    #     return all([key(x[i]) <= key(x[i + 1]) for i in xrange(len(x) - 1)])
+                actual_context_type = resource['attributes']['context']['contextType']
+                self.assertEqual(actual_context_type, context_type)
 
 
 if __name__ == '__main__':
