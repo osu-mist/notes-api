@@ -47,8 +47,8 @@ class integration_tests(unittest.TestCase):
             self.assertEqual(actual_note_id, note_id)
             # Validating the note received belong to the student id
             # fetching the first 9 digits of the note id
-            # fails if it does not have 9 digit id
-            match_student_id = re.match(r'(^\d{9})(\b-)', note_id)
+            # fails if it does not have 9 digit id with '-random_tring'
+            match_student_id = re.match(r'^(\d{9})-.+', note_id)
             if match_student_id:
                 actual_student_id = response_data['attributes']['studentId']
                 self.assertEqual(actual_student_id, match_student_id.group(1))
