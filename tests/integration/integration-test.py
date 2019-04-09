@@ -1,7 +1,7 @@
 import json
 import logging
 import random
-import utils
+import re
 import unittest
 import utils
 import yaml
@@ -47,9 +47,14 @@ class integration_tests(unittest.TestCase):
             actual_note_id = response_data['id']
             self.assertEqual(actual_note_id, note_id)
             # Validating the note received belong to the student id
-            student_id = (note_id.split('-'))
-            actual_student_id = response_data['attributes']['studentId']
-            self.assertEqual(actual_student_id, student_id[0])
+            # fetching the first 9 digits of the note id
+            # fails if it does not have 9 digit id with '-random_tring'
+            match_student_id = re.match(r'^(\d{9})-.+', note_id)
+            if match_student_id:
+                actual_student_id = response_data['attributes']['studentId']
+                self.assertEqual(actual_student_id, match_student_id.group(1))
+            else:
+                self.fail('Note id don\'t include a 9 digit student id number')
 
         # invalid tests returns 404
         invalid_note_ids = ['930000000', '111111111', 'Hello', '-123']
