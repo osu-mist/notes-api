@@ -48,9 +48,14 @@ class integration_tests(unittest.TestCase):
             actual_note_id = response_data['id']
             self.assertEqual(actual_note_id, note_id)
             # Validating the note received belong to the student id
-            student_id = (note_id.split('-'))
-            actual_student_id = response_data['attributes']['studentId']
-            self.assertEqual(actual_student_id, student_id[0])
+            # fetching the first 9 digits of the note id
+            # fails if it does not have 9 digit id with '-random_tring'
+            match_student_id = re.match(r'^(\d{9})-.+', note_id)
+            if match_student_id:
+                actual_student_id = response_data['attributes']['studentId']
+                self.assertEqual(actual_student_id, match_student_id.group(1))
+            else:
+                self.fail('Note id don\'t include a 9 digit student id number')
 
         # invalid tests returns 404
         invalid_note_ids = ['930000000', '111111111', 'Hello', '-123']
@@ -59,13 +64,17 @@ class integration_tests(unittest.TestCase):
             schema = utils.get_resource_schema(self, 'Error')
             utils.check_schema(self, response, schema)
 
-    # /notes?studentId=111111111
+    def check_schema(self, params, endpoint='/notes'):
+        response = utils.make_request(self, endpoint, 200, params=params)
+        schema = utils.get_resource_schema(self, 'NoteResource')
+        utils.check_schema(self, response, schema)
+        return response
+
+    # Test case: GET /notes?studentId=
     def test_get_notes_query_by_student_id(self, endpoint='/notes'):
         for student_id in self.test_cases['valid_student_id']:
             params = {'studentId': student_id}
-            response = utils.make_request(self, endpoint, 200, params=params)
-            note_schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, note_schema)
+            response = self.check_schema(params)
 
             creator_ids = []
             context_types = []
@@ -80,9 +89,9 @@ class integration_tests(unittest.TestCase):
                 note_id = resource['id']
                 match_student_id = re.match(r'(^\d{9})(\b-)', note_id)
                 if match_student_id:
-                    self.assertEqual(actual_student_id, match_student_id.group(1))
+                    self.assertEqual(student_id, match_student_id.group(1))
                 else:
-                    self.fail('Note id don\'t include a 9 digit student id number')
+                    self.fail('Note id don\'t include a student id number')
 
                 creator_ids.append(attributes['creatorId'])
                 context_types.append(attributes['context']['contextType'])
@@ -98,9 +107,7 @@ class integration_tests(unittest.TestCase):
     def test_get_notes_query_non_existing_student_id(self, endpoint='/notes'):
         for student_id in self.test_cases['non_existing_student_id']:
             params = {'studentId': student_id}
-            response = utils.make_request(self, endpoint, 200, params=params)
-            note_schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, note_schema)
+            response = self.check_schema(params)
 
         invalid_student_ids = random.sample(range(0, 99999999), 5)
         # invalid tests returns 400
@@ -114,9 +121,7 @@ class integration_tests(unittest.TestCase):
     def query_creator_id(self, student_id, creator_ids, endpoint='/notes'):
         for creator_id in creator_ids:
             params = {'studentId': student_id, 'creatorId': creator_id}
-            response = utils.make_request(self, endpoint, 200, params=params)
-            schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, schema)
+            response = self.check_schema(params)
             # Validating the creatorId requested is the same creatorId received
             for resource in response.json()['data']:
                 actual_creator_id = resource['attributes']['creatorId']
@@ -126,21 +131,18 @@ class integration_tests(unittest.TestCase):
         for note in notes:
             q = random.choice(note.split(' '))
             params = {'studentId': student_id, 'q': q}
-            response = utils.make_request(self, endpoint, 200, params=params)
-            schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, schema)
+            response = self.check_schema(params)
             # Validating the search word requested exist in the notes received
             for resource in response.json()['data']:
                 actual_note = resource['attributes']['note']
                 self.assertIn(q, actual_note)
 
     def query_sort_keys(self, student_id, endpoint='/notes'):
-        sort_keys = ['lastModified', 'source', 'permissions' , 'contextType']
+        sort_keys = ['lastModified', 'source', 'permissions', 'contextType']
         for sort_key in sort_keys:
             params = {'studentId': student_id, 'sortKey': sort_key}
-            response = utils.make_request(self, endpoint, 200, params=params)
-            note_schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, note_schema)
+            response = self.check_schema(params)
+            # Validating each sort_key
             if sort_key == 'lastModified':
                 self.check_time_sort(response.json()['data'])
             elif sort_key == 'source' or sort_key == 'permissions':
@@ -148,37 +150,35 @@ class integration_tests(unittest.TestCase):
             elif sort_key == 'contextType':
                 self.check_context_type_sort(response.json()['data'])
 
-
     def check_time_sort(self, response):
-        greater_element = datetime.strptime(response[0]['attributes']['lastModified'],
+        last_modified = response[0]['attributes']['lastModified']
+        greater_element = datetime.strptime(last_modified,
                                             '%Y-%m-%dT%H:%M:%S.%f%z')
         for resource in response:
-            current_element =  datetime.strptime(resource['attributes']['lastModified'],
+            current_element = datetime.strptime(last_modified,
                                                 '%Y-%m-%dT%H:%M:%S.%f%z')
             self.assertGreaterEqual(greater_element, current_element)
             greater_element = current_element
-    
+
     def check_alphabetical_sort(self, response, sort_key):
         greater_element = response[0]['attributes'][sort_key]
         for resource in response:
-            current_element =  resource['attributes'][sort_key]
+            current_element = resource['attributes'][sort_key]
             self.assertGreaterEqual(current_element, greater_element)
             greater_element = current_element
-    
+
     def check_context_type_sort(self, response):
         greater_element = response[0]['attributes']['context']['contextType']
         for resource in response:
-            current_element =  resource['attributes']['context']['contextType']
+            current_element = resource['attributes']['context']['contextType']
             self.assertGreaterEqual(current_element, greater_element)
             greater_element = current_element
 
     def query_source(self, student_id, sources, endpoint='/notes'):
         for source in sources:
             params = {'studentId': student_id, 'sources': source}
-            response = utils.make_request(self, endpoint, 200, params=params)
-            schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, schema)
-            # Validating the source requested is the same source 
+            response = self.check_schema(params)
+            # Validating the source requested is the same source
             for resource in response.json()['data']:
                 actual_source = resource['attributes']['source']
                 self.assertEqual(actual_source, source)
@@ -186,13 +186,12 @@ class integration_tests(unittest.TestCase):
     def query_context_type(self, student_id, context_types, endpoint='/notes'):
         for context_type in context_types:
             params = {'studentId': student_id, 'contextTypes': context_type}
-            response = utils.make_request(self, endpoint, 200, params=params)
-            schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, schema)
-            # Validating the contextTypes requested 
+            response = self.check_schema(params)
+            # Validating the contextTypes requested
             # is the same contextTypes received
             for resource in response.json()['data']:
-                actual_context_type = resource['attributes']['context']['contextType']
+                context = resource['attributes']['context']
+                actual_context_type = context['contextType']
                 self.assertEqual(actual_context_type, context_type)
 
 
