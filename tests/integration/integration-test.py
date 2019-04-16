@@ -107,6 +107,7 @@ class integration_tests(unittest.TestCase):
     # invalid tests returns 400
     def test_get_notes_query_invalid_student_ids(self, endpoint='/notes'):
         invalid_student_ids = ["12345678", "random", "1234567890", " "]
+        invalid_student_ids = random.sample(invalid_student_ids, 2)
         for student_id in invalid_student_ids:
             params = {'studentId': student_id}
             response = utils.make_request(self, endpoint, 400, params=params)
