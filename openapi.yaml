@@ -64,7 +64,7 @@ paths:
             type: string
             collectionFormat: csv
           required: false
-          description: "A comma-separated list of sources/sub-sources to filter by. Each source has format: `source` or `source.subSource`"
+          description: 'A comma-separated list of sources/sub-sources to filter by. Each source has format: `source` or `source.subSource`'
         - name: contextTypes
           in: query
           type: array
