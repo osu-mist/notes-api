@@ -10,7 +10,7 @@ const loggerConfig = config.get('logger');
  * @returns A transport for daily rotate file
  */
 const dailyRotateFileTransport = new (winston.transports.DailyRotateFile)({
-  filename: 'express-api-skeleton-%DATE%.log',
+  filename: 'notes-api-%DATE%.log',
   datePattern: loggerConfig.pattern,
   maxSize: loggerConfig.size,
   zippedArchive: loggerConfig.archive,
