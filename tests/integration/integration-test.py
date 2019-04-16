@@ -103,10 +103,10 @@ class integration_tests(unittest.TestCase):
             self.query_sort_keys(student_id)
             self.query_source(student_id, sources)
             self.query_context_type(student_id, context_types)
-    
+
     # invalid tests returns 400
     def test_get_notes_query_invalid_student_ids(self, endpoint='/notes'):
-        invalid_student_ids = random.sample(["12345678", "random", "1234567890", " "], 2)
+        invalid_student_ids = ["12345678", "random", "1234567890", " "]
         for student_id in invalid_student_ids:
             params = {'studentId': student_id}
             response = utils.make_request(self, endpoint, 400, params=params)
@@ -123,7 +123,8 @@ class integration_tests(unittest.TestCase):
                 self.assertEqual(actual_creator_id, creator_id)
 
         # invalid tests returns 400
-        invalid_creator_id = random.choice(["12345678", "random", "1234567890", " "])
+        invalid_creator_ids = ["12345678", "random", "1234567890", " "]
+        invalid_creator_id = random.choice(invalid_creator_ids)
         params = {'studentId': student_id, 'creatorId': invalid_creator_id}
         response = utils.make_request(self, endpoint, 400, params=params)
         schema = utils.get_resource_schema(self, 'Error')
@@ -153,7 +154,8 @@ class integration_tests(unittest.TestCase):
                 self.check_context_type_sort(response.json()['data'])
 
         # invalid sortKey tests returns 400
-        invalid_source = random.choice([" ", "lastmodified", "random", "contexttype"])
+        invalid_sources = [" ", "lastmodified", "random", "contexttype"]
+        invalid_source = random.choice(invalid_sources)
         params = {'studentId': student_id, 'sortKey': invalid_source}
         response = utils.make_request(self, endpoint, 400, params=params)
         schema = utils.get_resource_schema(self, 'Error')
@@ -185,9 +187,11 @@ class integration_tests(unittest.TestCase):
 
     def check_context_type_sort(self, response):
         try:
-            greater_element = response[0]['attributes']['context']['contextType']
+            attributes = response[0]['attributes']
+            greater_element = attributes['context']['contextType']
             for resource in response:
-                current_element = resource['attributes']['context']['contextType']
+                attributes = resource['attributes']
+                current_element = attributes['context']['contextType']
                 self.assertGreaterEqual(current_element, greater_element)
                 greater_element = current_element
         except IndexError:
@@ -213,7 +217,8 @@ class integration_tests(unittest.TestCase):
                     self.assertIn(actual_source, sources)
 
         # invalid sources tests returns 400
-        invalid_source = random.choice([" ", "advisorportal", "random", "degreeworks"])
+        invalid_sources = [" ", "advisorportal", "random", "degreeworks"]
+        invalid_source = random.choice(invalid_sources)
         params = {'studentId': student_id, 'sources': invalid_source}
         response = utils.make_request(self, endpoint, 400, params=params)
         schema = utils.get_resource_schema(self, 'Error')
@@ -239,8 +244,6 @@ class integration_tests(unittest.TestCase):
             context = resource['attributes']['context']
             actual_context_type = context['contextType']
             self.assertIn(actual_context_type, context_types)
-            
-
 
 
 if __name__ == '__main__':
