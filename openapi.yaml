@@ -334,14 +334,8 @@ definitions:
     example: '987654321'
   source:
     type: string
-    enum:
-      - 'advisorPortal'
-      - 'banner'
-      - 'degreeWorks'
-      - 'HSRC'
-      - 'CAPS'
-      - 'athleticDepartment'
     description: The data source of the note
+    example: advisorPortal
   subSource:
     type: string
     description: The sub-source of the note. Used when a source has sub-groups that have different permission levels.
