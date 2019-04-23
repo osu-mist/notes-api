@@ -94,6 +94,10 @@ const genericError = (err, req, res, next) => { // eslint-disable-line no-unused
   }
 };
 
-const runtimeErrors = composeErrors([customOpenApiError, openApiError, genericError]);
+const runtimeErrors = composeErrors([
+  customOpenApiError,
+  openApiError,
+  genericError,
+]);
 
 module.exports = { runtimeErrors };

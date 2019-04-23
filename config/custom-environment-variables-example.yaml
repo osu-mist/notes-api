@@ -7,10 +7,8 @@ authentication:
   username: 'USER'
   password: 'PASSWD'
 
-aws:
-  accessKeyId: 'ACCESS_KEY_ID'
-  secretAccessKey: 'SECRET_ACCESS_KEY'
-
-api:
-  awsBucket: 'AWS_BUCKET'
-  dbDirectoryPath: 'DB_PATH'
+dataSources:
+  oracledb:
+    connectString: 'DB_URL'
+    user: 'DB_USER'
+    password: 'DB_PASSWD'

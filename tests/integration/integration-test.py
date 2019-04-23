@@ -2,6 +2,10 @@ import json
 import logging
 import re
 import unittest
+import yaml
+
+from prance import ResolvingParser
+
 import utils
 import yaml
 
@@ -16,6 +20,7 @@ class integration_tests(unittest.TestCase):
             cls.base_url = utils.setup_base_url(config)
             cls.session = utils.setup_session(config)
             cls.test_cases = config['test_cases']
+            cls.local_test = config['local_test']
 
         with open(openapi_path) as openapi_file:
             openapi = yaml.load(openapi_file, Loader=yaml.SafeLoader)

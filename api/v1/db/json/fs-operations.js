@@ -1,16 +1,27 @@
+const config = require('config');
 const fs = require('fs');
 
+const { dbPath } = config.get('dataSources').json;
+
 /**
- * @summary Validate the DB directory path and throw an error if invalid
+ * @summary Validate a file path and throw an error if invalid
  * @function
- * @throws Throws an error if the path is not valid
- * @param dbDirectoryPath
+ * @throws Throws an error if the file path is not valid
+ * @param {string} path
  */
-const validateDBPath = (dbDirectoryPath) => {
-  if (!fs.existsSync(dbDirectoryPath)) {
-    throw new Error(`DB directory path: '${dbDirectoryPath}' is invalid`);
-  }
+const validateFilePath = async (path) => {
+  fs.access(path, (err) => {
+    if (err) {
+      throw new Error(`Path: '${path}' is invalid: ${err}`);
+    }
+  });
 };
+
+/**
+ * @summary Validate database file path
+ * @function
+ */
+const validateJsonDb = () => validateFilePath(dbPath);
 
 /**
  * @summary Read a JSON file and return the contents as an object
@@ -94,7 +105,8 @@ const deleteFile = (filePath) => {
 };
 
 module.exports = {
-  validateDBPath,
+  validateFilePath,
+  validateJsonDb,
   readJsonFile,
   writeJsonFile,
   initStudentDir,
