@@ -8,7 +8,7 @@ authentication:
   password: 'PASSWD'
 
 dataSources:
-  oracledb:
-    connectString: 'DB_URL'
-    user: 'DB_USER'
-    password: 'DB_PASSWD'
+  awsS3:
+    bucket: 'S3_BUCKET'
+    accessKeyId: 'ACCESS_KEY_ID'
+    secretAccessKey: 'SECRET_ACCESS_KEY'
