@@ -45,7 +45,7 @@ class integration_tests(unittest.TestCase):
         for note_id in self.test_cases['valid_note_ids']:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 200)
             schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, schema)
+            utils.check_schema(self, response, schema, None)
             # Validating the note id requested is the same note id received
             response_data = response.json()['data']
             actual_note_id = response_data['id']
@@ -65,7 +65,7 @@ class integration_tests(unittest.TestCase):
         for note_id in invalid_note_ids:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 404)
             schema = utils.get_resource_schema(self, 'Error')
-            utils.check_schema(self, response, schema)
+            utils.check_schema(self, response, schema, None)
 
 
 if __name__ == '__main__':
