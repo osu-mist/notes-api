@@ -8,14 +8,28 @@ const sinon = require('sinon');
 
 const testData = require('./test-data');
 
-const fsOps = appRoot.require('api/v1/db/json/fs-operations');
-
 chai.use(chaiExclude);
 const { assert } = chai;
 
-const mockConfig = () => sinon.replace(config, 'get', property => testData.mockConfig[property]);
+/**
+ * @summary Map a dot-separated string to an object in mock config
+ * @param {Object} obj Object that will be accessed when getting property
+ * @param {String} arg The dot-separated string of properties
+ * @returns {Object} The value of the mock config's specified property
+ */
+const mockConfigGet = (obj, arg) => {
+  const properties = arg.split('.');
+  return properties.length === 1
+    ? obj[properties[0]]
+    : mockConfigGet(obj[properties[0]], properties.slice(1).join('.'));
+};
+
+const mockConfig = () => sinon.replace(config, 'get', arg => (
+  mockConfigGet(testData.mockConfig, arg)
+));
 
 mockConfig();
+const fsOps = appRoot.require('api/v1/db/json/fs-operations');
 const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
 sinon.restore();
 
