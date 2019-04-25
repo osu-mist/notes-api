@@ -115,7 +115,7 @@ adminAppRouter.get(`${openapi.basePath}`, async (req, res) => {
 initialize({
   app: appRouter,
   apiDoc: openapi,
-  paths: `${appRoot}/api/v1/paths`,
+  paths: `${appRoot}/api${openapi.basePath}/paths`,
   consumesMiddleware: {
     'application/json': compose([bodyParser.json(), bodyParserErrorHandler]),
   },
