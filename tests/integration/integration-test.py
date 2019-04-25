@@ -7,9 +7,6 @@ import yaml
 from prance import ResolvingParser
 
 import utils
-import yaml
-
-from prance import ResolvingParser
 
 
 class integration_tests(unittest.TestCase):
