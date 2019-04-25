@@ -2,7 +2,7 @@ const AWS = require('aws-sdk');
 const config = require('config');
 const _ = require('lodash');
 
-const awsConfig = config.get('aws');
+const awsConfig = config.get('dataSources.awsS3');
 
 const s3 = new AWS.S3(awsConfig);
 let thisBucket = null;
@@ -33,6 +33,19 @@ const bucketExists = (bucket = thisBucket) => new Promise((resolve, reject) => {
     }
   });
 });
+
+/**
+ * @summary Verify the AWS S3 data source
+ * @function
+ */
+const validateAwsS3 = async () => {
+  const { bucket } = config.get('dataSources.awsS3');
+  if (!await bucketExists(bucket)) {
+    throw new Error('Error: AWS bucket does not exist');
+  } else {
+    setBucket(bucket);
+  }
+};
 
 /**
  * @summary Checks if an object exists in a bucket
@@ -119,9 +132,9 @@ const putDir = (key, params = {}, bucket = thisBucket) => {
 };
 
 /**
- * @summary Uploads a JSON object to a bucket
+ * @summary Uploads an object to a bucket as JSON
  * @function
- * @param {Object} object The JSON object to be uploaded
+ * @param {Object} object The object to be uploaded
  * @param {string} key The desired key name of the object
  * @param {Object} params Additional params to be used in put-object
  * @param {string} bucket The bucket to upload the object to
@@ -143,9 +156,10 @@ const putObject = (object, key, params = {}, bucket = thisBucket) => {
 /**
  * @summary Update an existing object's metadata by copying the object to itself
  * @function
- * @param {Object} metadata
- * @param {string} key
- * @param {string} bucket
+ * @param {Object} metadata The desired metadata that will be added to or replace existing metadata
+ * @param {string} key The key of the object
+ * @param {string} bucket The bucket where the object is located
+ * @returns {Promise} Promise object representing the response
  */
 const updateMetadata = async (metadata, key, bucket = thisBucket) => {
   const currentHead = await headObject(key, bucket);
@@ -161,6 +175,13 @@ const updateMetadata = async (metadata, key, bucket = thisBucket) => {
   return s3.copyObject(params).promise();
 };
 
+/**
+ * @summary Delete an existing object
+ * @function
+ * @param {string} key The key of the object to be deleted
+ * @param {string} bucket The bucket where the object is located
+ * @returns {Promise} Promise object representing the response. undefined if the key was not found
+ */
 const deleteObject = (key, bucket = thisBucket) => new Promise((resolve, reject) => {
   const params = { Bucket: bucket, Key: key };
   s3.deleteObject(params).promise().then((data) => {
@@ -177,6 +198,7 @@ const deleteObject = (key, bucket = thisBucket) => new Promise((resolve, reject)
 module.exports = {
   setBucket,
   bucketExists,
+  validateAwsS3,
   objectExists,
   headObject,
   listObjects,
