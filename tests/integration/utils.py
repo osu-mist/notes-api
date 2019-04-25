@@ -109,7 +109,7 @@ def make_request(self, endpoint, expected_status_code,
 
 
 # Check the schema of response match OpenAPI specification
-def check_schema(self, response, schema):
+def check_schema(self, response, schema, nullable_fields):
     # Mapping of OpenAPI data types and python data types
     types_dict = {
         'string': str,
@@ -188,15 +188,14 @@ def check_schema(self, response, schema):
         for field, actual_value in actual_attributes.items():
             expected_attribute = expected_attributes[field]
             expected_type = __get_attribute_type(expected_attribute)
-            if (actual_value and expected_type) or (
-              'nullable' in expected_attribute and
-               expected_attribute['nullable'] is False):
-                    self.assertIsInstance(actual_value, expected_type)
+
+            if (actual_value and expected_type) or \
+               field not in nullable_fields:
+                self.assertIsInstance(actual_value, expected_type)
 
     status_code = response.status_code
     content = get_json_content(self, response)
 
-    # TODO: Add self-link testing
     # Basic tests for successful/error response
     try:
         if status_code == 200:
@@ -216,27 +215,46 @@ def check_schema(self, response, schema):
 
 
 # Check url for correct base and endpoint, parameters
-def check_url(self, actual_url, endpoint, query_params=None):
-    if query_params is None:
-        query_params = {}
-    actual_url_obj = urllib.parse.urlparse(actual_url)
-    base_url_obj = urllib.parse.urlparse(self.base_url)
-    for actual_attribute, base_attribute, attribute_type in [
-      [actual_url_obj.scheme, base_url_obj.scheme, 'scheme'],
-      [actual_url_obj.netloc, base_url_obj.netloc, 'netloc'],
-      [actual_url_obj.path, f'{base_url_obj.path}{endpoint}', 'path'],
-      [dict(urllib.parse.parse_qsl(actual_url_obj.query)), query_params,
-       'params']]:
-            self.assertEqual(actual_attribute, base_attribute,
-                             f'{attribute_type} does not match')
+def check_url(self, link_url, endpoint, query_params=None):
+    query_params = {} if query_params is None else query_params
+
+    base_url = self.base_url
+    if self.local_test:
+        """Local instances return self links without port and /api"""
+        base_url = re.sub(':\d{4}/api', '', self.base_url)
+
+    link_url_obj = urllib.parse.urlparse(link_url)
+    base_url_obj = urllib.parse.urlparse(base_url)
+
+    url_equalities = [
+      [link_url_obj.scheme, base_url_obj.scheme, 'scheme'],
+      [link_url_obj.netloc, base_url_obj.netloc, 'netloc'],
+      [link_url_obj.path, f'{base_url_obj.path}{endpoint}', 'path']]
+
+    for link_attribute, base_attribute, attribute_type in url_equalities:
+        self.assertEqual(link_attribute, base_attribute,
+                         textwrap.dedent(f'''
+                            {attribute_type} does not match
+                            Expected: {base_attribute}
+                            Link: {link_attribute}'''))
+
+    link_url_query = dict(urllib.parse.parse_qsl(link_url_obj.query))
+    self.assertTrue(set(link_url_query).issuperset(set(query_params)),
+                    textwrap.dedent(f'''
+                        Query parameter(s) not in link.
+                        Requested parameters: {query_params}
+                        Link parameters: {link_url_query}'''))
 
 
 # Check response of an endpoint for response code, schema, self link
-def test_endpoint(self, endpoint, resource, response_code, query_params=None):
+def test_endpoint(self, endpoint, resource, response_code, query_params=None,
+                  nullable_fields=None):
+    nullable_fields = [] if nullable_fields is None else nullable_fields
     schema = get_resource_schema(self, resource)
     response = make_request(self, endpoint, response_code,
                             params=query_params)
-    check_schema(self, response, schema)
+
+    check_schema(self, response, schema, nullable_fields)
     response_json = response.json()
     if 'links' in response_json:
         check_url(self, response_json['links']['self'], endpoint, query_params)
