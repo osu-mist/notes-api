@@ -64,15 +64,12 @@ const filterNotes = (rawNotes, queryParams) => {
     creatorId: note => !creatorId || note.creatorId === creatorId,
     contextTypes: note => !contextTypes || _.includes(contextTypes, getContextType(note)),
     q: note => !q || _.includes(note.note, q),
-    sources: (note) => {
-      if (!sources) {
-        return true;
-      }
-      return _.some(sources, (it) => {
+    sources: note => (
+      !sources || _.some(sources, (it) => {
         const [source, subSource] = it.split('.');
         return (note.source === source) && (!subSource || note.subSource === subSource);
-      });
-    },
+      })
+    ),
   };
   _.remove(rawNotes, note => !(_.overEvery(Object.values(filterPredicates))(note)));
 
