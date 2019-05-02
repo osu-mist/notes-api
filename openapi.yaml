@@ -62,13 +62,9 @@ paths:
           type: array
           items:
             type: string
-            enum: &SOURCES
-              - 'advisorPortal'
-              - 'banner'
-              - 'degreeWorks'
             collectionFormat: csv
           required: false
-          description: A comma-separated list of sources to filter by
+          description: 'A comma-separated list of sources/sub-sources to filter by. Each source has format: `source` or `source.subSource`'
         - name: contextTypes
           in: query
           type: array
@@ -224,6 +220,8 @@ definitions:
             $ref: '#/definitions/creatorId'
           source:
             $ref: '#/definitions/source'
+          subSource:
+            $ref: '#/definitions/subSource'
           permissions:
             $ref: '#/definitions/permissions'
           context:
@@ -336,8 +334,11 @@ definitions:
     example: '987654321'
   source:
     type: string
-    enum: *SOURCES
     description: The data source of the note
+    example: advisorPortal
+  subSource:
+    type: string
+    description: The sub-source of the note. Used when a source has sub-groups that have different permission levels.
   permissions:
     type: string
     enum:
