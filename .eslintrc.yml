@@ -3,5 +3,9 @@ env:
   node: true
   mocha: true
 rules:
-  no-param-reassign: off
-  no-console: off
+  no-param-reassign: "off"
+  no-console: "off"
+  import/no-unresolved:
+    - error
+    - commonjs: true
+      ignore: [ ^aws-sdk$, ^oracledb$, ^request-promise-native$ ]

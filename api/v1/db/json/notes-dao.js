@@ -7,7 +7,7 @@ const path = require('path');
 const fsOps = require('./fs-operations');
 const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
 
-const { dbDirectoryPath } = config.get('api');
+const { dbPath } = config.get('dataSources.json');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
 
@@ -59,7 +59,7 @@ const filterNotes = (rawNotes, queryParams) => {
 const getNotes = query => new Promise((resolve, reject) => {
   try {
     const { studentId } = query;
-    const studentDirPath = `${dbDirectoryPath}/${studentId}`;
+    const studentDirPath = `${dbPath}/${studentId}`;
     let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
     noteFiles = _.filter(noteFiles, it => path.extname(it).toLowerCase() === '.json');
 
@@ -87,10 +87,10 @@ const getNotes = query => new Promise((resolve, reject) => {
 const fetchNote = (noteId) => {
   try {
     const studentId = parseStudentId(noteId);
-    const studentDirPath = `${dbDirectoryPath}/${studentId}`;
+    const studentDirPath = `${dbPath}/${studentId}`;
     return fsOps.readJsonFile(`${studentDirPath}/${noteId}.json`);
   } catch (err) {
-    return null;
+    return undefined;
   }
 };
 
@@ -105,7 +105,7 @@ const fetchNote = (noteId) => {
 const writeNote = (noteId, newContents, failIfExists = false) => {
   const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
   const studentId = parseStudentId(noteId);
-  const noteFilePath = `${dbDirectoryPath}/${studentId}/${noteId}.json`;
+  const noteFilePath = `${dbPath}/${studentId}/${noteId}.json`;
   fsOps.writeJsonFile(noteFilePath, newContents, options);
 };
 
@@ -150,7 +150,7 @@ const postNote = body => new Promise((resolve, reject) => {
       contextType: attributes.context.contextType, contextId: attributes.context.contextId,
     } : null;
 
-    const studentDir = `${dbDirectoryPath}/${studentId}`;
+    const studentDir = `${dbPath}/${studentId}`;
     const counterFilePath = `${studentDir}/counter.txt`;
     fsOps.initStudentDir(studentDir, counterFilePath);
 
@@ -205,7 +205,7 @@ const patchNoteById = (noteId, body) => new Promise((resolve, reject) => {
 const deleteNoteById = noteId => new Promise((resolve, reject) => {
   try {
     const studentId = parseStudentId(noteId);
-    const noteFilePath = `${dbDirectoryPath}/${studentId}/${noteId}.json`;
+    const noteFilePath = `${dbPath}/${studentId}/${noteId}.json`;
     resolve(fsOps.deleteFile(noteFilePath));
   } catch (err) {
     reject(err);

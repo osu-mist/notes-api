@@ -62,13 +62,9 @@ paths:
           type: array
           items:
             type: string
-            enum: &SOURCES
-              - 'advisorPortal'
-              - 'banner'
-              - 'degreeWorks'
             collectionFormat: csv
           required: false
-          description: A comma-separated list of sources to filter by
+          description: 'A comma-separated list of sources/sub-sources to filter by. Each source has format: `source` or `source.subSource`'
         - name: contextTypes
           in: query
           type: array
@@ -78,15 +74,15 @@ paths:
           required: false
           description: A comma-separated list of context types to filter by
       responses:
-        200:
+        '200':
           description: Successful response
           schema:
             $ref: '#/definitions/NotesResult'
-        400:
+        '400':
           description: Bad request
           schema:
             $ref: '#/definitions/Errors'
-        500:
+        '500':
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
@@ -103,7 +99,7 @@ paths:
           schema:
             $ref: '#/definitions/NotePostBody'
       responses:
-        201:
+        '201':
           description: Successfully created a note
           schema:
             $ref: '#/definitions/NoteResult'
@@ -112,11 +108,11 @@ paths:
               type: string
               format: url
               description: Location of the newly created resource
-        400:
+        '400':
           description: Invalid note object
           schema:
             $ref: '#/definitions/Errors'
-        500:
+        '500':
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
@@ -130,15 +126,15 @@ paths:
         - notes
       operationId: getNoteById
       responses:
-        200:
+        '200':
           description: Successfully retrieved note
           schema:
             $ref: '#/definitions/NoteResult'
-        404:
+        '404':
           description: Note with this noteId not found
           schema:
             $ref: '#/definitions/Errors'
-        500:
+        '500':
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
@@ -161,19 +157,19 @@ paths:
                 $ref: '#/definitions/permissions'
             additionalProperties: false
       responses:
-        200:
+        '200':
           description: Successfully updated the note
           schema:
             $ref: '#/definitions/NoteResult'
-        400:
+        '400':
           description: Invalid patch body
           schema:
             $ref: '#/definitions/Errors'
-        404:
+        '404':
           description: Note not found
           schema:
             $ref: '#/definitions/Errors'
-        500:
+        '500':
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
@@ -183,13 +179,13 @@ paths:
         - notes
       operationId: deleteNoteById
       responses:
-        204:
+        '204':
           description: Successfully deleted the note
-        404:
+        '404':
           description: Note not found
           schema:
             $ref: '#/definitions/Errors'
-        500:
+        '500':
           description: Internal server error
           schema:
             $ref: '#/definitions/Errors'
@@ -224,6 +220,8 @@ definitions:
             $ref: '#/definitions/creatorId'
           source:
             $ref: '#/definitions/source'
+          subSource:
+            $ref: '#/definitions/subSource'
           permissions:
             $ref: '#/definitions/permissions'
           context:
@@ -291,7 +289,7 @@ definitions:
       status:
         type: string
         description: HTTP status code
-        example: 123
+        example: '123'
       title:
         type: string
         description: A short, user readable summary of the error
@@ -299,7 +297,7 @@ definitions:
       code:
         type: string
         description: An application-specific error code
-        example: 1234
+        example: '1234'
       detail:
         type: string
         description: A long description of the error that may contain instance-specific details
@@ -336,8 +334,11 @@ definitions:
     example: '987654321'
   source:
     type: string
-    enum: *SOURCES
     description: The data source of the note
+    example: advisorPortal
+  subSource:
+    type: string
+    description: The sub-source of the note. Used when a source has sub-groups that have different permission levels.
   permissions:
     type: string
     enum:

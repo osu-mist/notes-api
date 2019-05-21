@@ -52,7 +52,6 @@ const writeNote = async (noteId, newContents) => {
 const filterNotes = (rawNotes, queryParams) => {
   // Safely access contextType
   const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
-
   const {
     creatorId,
     q,
@@ -61,19 +60,25 @@ const filterNotes = (rawNotes, queryParams) => {
     contextTypes,
   } = queryParams;
 
-  rawNotes = creatorId ? _.filter(rawNotes, it => it.creatorId === creatorId) : rawNotes;
+  const filterPredicates = {
+    creatorId: note => !creatorId || note.creatorId === creatorId,
+    contextTypes: note => !contextTypes || _.includes(contextTypes, getContextType(note)),
+    q: note => !q || _.includes(note.note, q),
+    sources: note => (
+      !sources || _.some(sources, (it) => {
+        const [source, subSource] = it.split('.');
+        return (note.source === source) && (!subSource || note.subSource === subSource);
+      })
+    ),
+  };
+  _.remove(rawNotes, note => !(_.overEvery(Object.values(filterPredicates))(note)));
 
-  rawNotes = contextTypes
-    ? _.filter(rawNotes, it => _.includes(contextTypes, getContextType(it)))
-    : rawNotes;
-  rawNotes = q ? _.filter(rawNotes, it => _.includes(it.note, q)) : rawNotes;
   // sort first by sortKey, and then by lastModified within each sorted group
   rawNotes = _.orderBy(
     rawNotes,
     [sortKey === 'contextType' ? it => getContextType(it) : sortKey, 'lastModified'],
     [sortKey === 'lastModified' ? 'desc' : 'asc', 'desc'],
   );
-  rawNotes = sources ? _.filter(rawNotes, it => _.includes(sources, it.source)) : rawNotes;
   return rawNotes;
 };
 

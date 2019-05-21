@@ -1,36 +1,40 @@
 const appRoot = require('app-root-path');
 const config = require('config');
+const _ = require('lodash');
 
-const { setBucket, bucketExists } = appRoot.require('api/v1/db/aws/aws-operations');
-const { validateDBPath } = appRoot.require('api/v1/db/json/fs-operations');
-
-const { dataSource } = config.get('api');
+const { dataSources } = config.get('dataSources');
+const json = dataSources.includes('json')
+  ? appRoot.require('api/v1/db/json/fs-operations').validateJsonDb
+  : null;
+const oracledb = dataSources.includes('oracledb')
+  ? appRoot.require('api/v1/db/oracledb/connection').validateOracleDb
+  : null;
+const awsS3 = dataSources.includes('awsS3')
+  ? appRoot.require('api/v1/db/awsS3/aws-operations').validateAwsS3
+  : null;
 
 /**
  * @summary Validate database configuration
  * @function
  */
-const validateDataSource = async () => {
-  try {
-    if (dataSource === 'aws') {
-      const { awsBucket } = config.get('api');
-      if (!(await bucketExists(awsBucket))) {
-        console.error('Error: AWS bucket does not exist');
+const validateDataSource = () => {
+  const validationMethods = {
+    awsS3,
+    http: null, // TODO: add HTTP validation method
+    json,
+    oracledb,
+  };
+
+  _.each(dataSources, (dataSourceType) => {
+    if (dataSourceType in validationMethods) {
+      validationMethods[dataSourceType]().catch((err) => {
+        console.error(err);
         process.exit(1);
-      } else {
-        setBucket(awsBucket);
-      }
-    } else if (dataSource === 'local') {
-      const { dbDirectoryPath } = config.get('api');
-      await validateDBPath(dbDirectoryPath);
+      });
     } else {
-      console.error('Error: invalid option for api.dataSource. Valid options are "aws" and "local"');
-      process.exit(1);
+      throw new Error(`Data source type: '${dataSourceType}' is not recognized.`);
     }
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
-  }
+  });
 };
 
 module.exports = { validateDataSource };

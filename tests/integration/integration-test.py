@@ -3,11 +3,12 @@ import logging
 import random
 import re
 import unittest
-import utils
 import yaml
 
 from datetime import datetime
 from prance import ResolvingParser
+
+import utils
 
 
 class integration_tests(unittest.TestCase):
@@ -18,6 +19,7 @@ class integration_tests(unittest.TestCase):
             cls.base_url = utils.setup_base_url(config)
             cls.session = utils.setup_session(config)
             cls.test_cases = config['test_cases']
+            cls.local_test = config['local_test']
 
         with open(openapi_path) as openapi_file:
             openapi = yaml.load(openapi_file, Loader=yaml.SafeLoader)
@@ -42,7 +44,7 @@ class integration_tests(unittest.TestCase):
         for note_id in self.test_cases['valid_note_ids']:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 200)
             schema = utils.get_resource_schema(self, 'NoteResource')
-            utils.check_schema(self, response, schema)
+            utils.check_schema(self, response, schema, None)
             # Validating the note id requested is the same note id received
             response_data = response.json()['data']
             actual_note_id = response_data['id']
@@ -62,7 +64,7 @@ class integration_tests(unittest.TestCase):
         for note_id in invalid_note_ids:
             response = utils.make_request(self, f'{endpoint}/{note_id}', 404)
             schema = utils.get_resource_schema(self, 'Error')
-            utils.check_schema(self, response, schema)
+            utils.check_schema(self, response, schema, None)
 
     def get_response(self, params):
         response = utils.make_request(self, '/notes', 200, params=params)

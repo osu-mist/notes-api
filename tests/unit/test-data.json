@@ -4,8 +4,11 @@
       "protocol": "https",
       "hostname": "localhost"
     },
-    "api": {
-      "dbDirectoryPath": null
+    "dataSources": {
+      "dataSources": ["json"],
+      "json": {
+        "dbPath": null
+      }
     }
   },
   "validNotes": [
