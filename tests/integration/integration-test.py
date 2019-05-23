@@ -69,7 +69,7 @@ class integration_tests(unittest.TestCase):
     def get_response(self, params):
         response = utils.make_request(self, '/notes', 200, params=params)
         schema = utils.get_resource_schema(self, 'NoteResource')
-        utils.check_schema(self, response, schema)
+        utils.check_schema(self, response, schema, None)
         return response
 
     # Test case: GET /notes?studentId
@@ -118,13 +118,13 @@ class integration_tests(unittest.TestCase):
             params = {'studentId': student_id}
             response = utils.make_request(self, endpoint, 400, params=params)
             schema = utils.get_resource_schema(self, 'Error')
-            utils.check_schema(self, response, schema)
+            utils.check_schema(self, response, schema, None)
 
     def invalid_request_test(self, student_id, querry, param):
         params = {'studentId': student_id, querry: param}
         response = utils.make_request(self, '/notes', 400, params=params)
         schema = utils.get_resource_schema(self, 'Error')
-        utils.check_schema(self, response, schema)
+        utils.check_schema(self, response, schema, None)
 
     def query_creator_id(self, student_id, creator_ids, endpoint='/notes'):
         for creator_id in creator_ids:
@@ -219,8 +219,8 @@ class integration_tests(unittest.TestCase):
             params = {'studentId': student_id, 'sources': sources}
             response = self.get_response(params)
             for resource in response.json()['data']:
-                    actual_source = resource['attributes']['source']
-                    self.assertIn(actual_source, sources)
+                actual_source = resource['attributes']['source']
+                self.assertIn(actual_source, sources)
 
         # invalid sources tests returns 400
         invalid_sources = [" ", "advisorportal", "random", "degreeworks"]
@@ -228,7 +228,7 @@ class integration_tests(unittest.TestCase):
         params = {'studentId': student_id, 'sources': invalid_source}
         response = utils.make_request(self, endpoint, 400, params=params)
         schema = utils.get_resource_schema(self, 'Error')
-        utils.check_schema(self, response, schema)
+        utils.check_schema(self, response, schema, None)
 
     def query_context_type(self, student_id, context_types, endpoint='/notes'):
         for context_type in context_types:
