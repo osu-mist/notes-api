@@ -12,12 +12,6 @@ from prance import ResolvingParser
 import utils
 
 
-def powerset_list(iterable):
-    s = list(iterable)
-    tuples = chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
-    return list(map(lambda x: list(x), tuples))
-
-
 class integration_tests(unittest.TestCase):
     @classmethod
     def setup(cls, config_path, openapi_path):
@@ -44,19 +38,27 @@ class integration_tests(unittest.TestCase):
     def tearDownClass(cls):
         cls.session.close()
 
+    def get_response(
+            self,
+            params={},
+            status=200,
+            resource='NoteResource',
+            endpoint=''
+    ):
+        return utils.test_endpoint(
+            self,
+            f'/notes{endpoint}',
+            resource,
+            status,
+            params,
+            ['context']
+        )
+
     # Test case: GET /notes/{id}
     def test_get_note_by_id(self):
-        endpoint = '/notes'
-        nullable_fields = ['context']
         for note_id in self.test_cases['valid_note_ids']:
             with self.subTest('Test valid note IDs', note_id=note_id):
-                response = utils.test_endpoint(
-                    self,
-                    f'{endpoint}/{note_id}',
-                    'NoteResource',
-                    200,
-                    nullable_fields=nullable_fields
-                )
+                response = self.get_response(endpoint=f'/{note_id}')
                 # Validate that the note id requested is the same note id
                 # received
                 response_data = response.json()['data']
@@ -73,26 +75,14 @@ class integration_tests(unittest.TestCase):
 
         for note_id in self.test_cases['invalid_note_ids']:
             with self.subTest('Test invalid note IDs', note_id=note_id):
-                utils.test_endpoint(
-                    self,
-                    f'{endpoint}/{note_id}',
-                    'Error',
-                    404,
-                    nullable_fields=nullable_fields
+                self.get_response(
+                    status=404,
+                    resource='Error',
+                    endpoint=f'/{note_id}'
                 )
 
-    def get_response(self, params={}, status=200, resource='NoteResource'):
-        return utils.test_endpoint(
-            self,
-            '/notes',
-            resource,
-            status,
-            params,
-            ['context']
-        )
-
     # Test case: GET /notes?studentId
-    def test_get_notes_query_by_student_id(self):
+    def test_get_notes(self):
         for student_id in self.test_cases['valid_student_ids']:
             params = {'studentId': student_id}
             response = self.get_response(params)
@@ -123,8 +113,8 @@ class integration_tests(unittest.TestCase):
 
             if response.json()['data']:
                 with self.subTest(
-                        'filter by creatorId',
-                        student_id=student_id
+                    'filter by creatorId',
+                    student_id=student_id
                 ):
                     self.query_creator_id(student_id, creator_ids)
 
@@ -132,18 +122,21 @@ class integration_tests(unittest.TestCase):
                     self.query_source(student_id, sources)
 
                 with self.subTest(
-                        'filter by contextType',
-                        student_id=student_id
+                    'filter by contextType',
+                    student_id=student_id
                 ):
                     self.query_context_type(student_id, context_types)
 
-                self.query_string_search(student_id, notes)
-                self.query_sort_keys(student_id)
+                with self.subTest('filter by q', student_id=student_id):
+                    self.query_string_search(student_id, notes)
+
+                with self.subTest('query by sortKey', student_id=student_id):
+                    self.query_sort_keys(student_id)
             else:
                 logging.warning(f'No notes found for studentId {student_id}')
 
     # invalid tests returns 400
-    def test_get_notes_query_invalid_student_ids(self, endpoint='/notes'):
+    def test_get_notes_invalid_student_ids(self, endpoint='/notes'):
         invalid_student_ids = self.test_cases['invalid_student_ids']
         for student_id in invalid_student_ids:
             self.get_response({'studentId': student_id}, 400, 'Error')
@@ -252,15 +245,26 @@ class integration_tests(unittest.TestCase):
         for context_type in context_types:
             params = {'studentId': student_id, 'contextTypes': context_type}
             response = self.get_response(params)
-            # Validating the contextTypes requested
-            # is the same contextTypes received
+            # Validating the contextType requested is the same contextType
+            # received
             for resource in response.json()['data']:
                 context = resource['attributes']['context']
                 actual_context_type = context['contextType']
                 self.assertEqual(actual_context_type, context_type)
-        # Check more than one contextType at a time
-        ps = powerset_list(context_types)
-        for subset in (x for x in ps if x):
+
+        def powerset_list(iterable):
+            s = list(iterable)
+            tuples = chain.from_iterable(
+                combinations(s, r) for r in range(len(s)+1)
+            )
+            return list(map(lambda x: list(x), tuples))
+
+        # Test subsets of context_types with length 2 or more
+        subsets = list(x for x in powerset_list(context_types) if len(x) > 1)
+        # Limit the number of subsets to 10
+        if len(subsets) > 10:
+            subsets = random.sample(subsets, 10)
+        for subset in subsets:
             context_types = ','.join(subset)
             params = {'studentId': student_id, 'contextTypes': context_types}
             response = self.get_response(params)
