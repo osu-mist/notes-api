@@ -253,6 +253,13 @@ class integration_tests(unittest.TestCase):
                 self.assertEqual(actual_context_type, context_type)
 
         def powerset_list(iterable):
+            """Get the powerset of an iterable as a list of lists.
+            Order is not guaranteed. Example:
+            [1, 2, 3] -> [[], [1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]]
+
+            :param iterable: an iterable such as a list
+            :returns: The powerset as a list of lists
+            """
             s = list(iterable)
             tuples = chain.from_iterable(
                 combinations(s, r) for r in range(len(s)+1)
