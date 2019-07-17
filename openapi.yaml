@@ -81,11 +81,11 @@ paths:
         '400':
           description: Bad request
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
         '500':
           description: Internal server error
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
     post:
       summary: Create a new note
       tags:
@@ -111,11 +111,11 @@ paths:
         '400':
           description: Invalid note object
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
         '500':
           description: Internal server error
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
   /notes/{noteId}:
     parameters:
       - $ref: '#/parameters/authorization'
@@ -133,11 +133,11 @@ paths:
         '404':
           description: Note with this noteId not found
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
         '500':
           description: Internal server error
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
     patch:
       summary: Edit an existing note
       tags:
@@ -164,15 +164,15 @@ paths:
         '400':
           description: Invalid patch body
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
         '404':
           description: Note not found
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
         '500':
           description: Internal server error
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
     delete:
       summary: Delete an existing note
       tags:
@@ -184,11 +184,11 @@ paths:
         '404':
           description: Note not found
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
         '500':
           description: Internal server error
           schema:
-            $ref: '#/definitions/Errors'
+            $ref: '#/definitions/ErrorResult'
 parameters:
   noteId:
     name: noteId
@@ -284,7 +284,7 @@ definitions:
         type: string
         format: url
         description: Self-link of current resource
-  Error:
+  ErrorObject:
     properties:
       status:
         type: string
@@ -308,12 +308,12 @@ definitions:
             format: url
             description: A link to further information about the error
             example: https://developer.oregonstate.edu/documentation/error-reference#1234
-  Errors:
+  ErrorResult:
     properties:
       errors:
         type: array
         items:
-          $ref: '#/definitions/Error'
+          $ref: '#/definitions/ErrorObject'
   noteId:
     type: string
     description: A unique ID of a note concatenating the student ID that the note is for with a random string
