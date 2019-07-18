@@ -77,7 +77,7 @@ class integration_tests(unittest.TestCase):
             with self.subTest('Test invalid note IDs', note_id=note_id):
                 self.get_response(
                     status=404,
-                    resource='Error',
+                    resource='ErrorObject',
                     endpoint=f'/{note_id}'
                 )
 
@@ -139,7 +139,7 @@ class integration_tests(unittest.TestCase):
     def test_get_notes_invalid_student_ids(self, endpoint='/notes'):
         invalid_student_ids = self.test_cases['invalid_student_ids']
         for student_id in invalid_student_ids:
-            self.get_response({'studentId': student_id}, 400, 'Error')
+            self.get_response({'studentId': student_id}, 400, 'ErrorObject')
 
     def query_creator_id(self, student_id, creator_ids, endpoint='/notes'):
         for creator_id in creator_ids:
@@ -153,7 +153,7 @@ class integration_tests(unittest.TestCase):
         # invalid tests returns 400
         for invalid_creator_id in self.test_cases['invalid_student_ids']:
             params = {'studentId': student_id, 'creatorId': invalid_creator_id}
-            self.get_response(params, 400, 'Error')
+            self.get_response(params, 400, 'ErrorObject')
 
     def query_string_search(self, student_id, notes, endpoint='/notes'):
         for note in notes:
@@ -193,7 +193,7 @@ class integration_tests(unittest.TestCase):
         invalid_sort_keys = [' ', 'lastmodified', 'random', 'contexttype']
         for invalid_sort_key in invalid_sort_keys:
             params = {'studentId': student_id, 'sortKey': invalid_sort_key}
-            self.get_response(params, 400, 'Error')
+            self.get_response(params, 400, 'ErrorObject')
 
     def check_time_sort(self, response):
         format = '%Y-%m-%dT%H:%M:%S.%f%z'

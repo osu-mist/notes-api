@@ -17,7 +17,7 @@ const isOpenApiError = err => (
 const customOpenApiError = (err, req, res, next) => {
   // call the next middleware function if the error is not an openapi error
   if (!isOpenApiError(err)) {
-    next(err);
+    return next(err);
   }
 
   const { status, errors } = err;
@@ -37,7 +37,7 @@ const customOpenApiError = (err, req, res, next) => {
     err.errors = _.difference(err.errors, handledErrors);
     err.details = details;
   }
-  next(err);
+  return next(err);
 };
 
 /**
@@ -46,7 +46,7 @@ const customOpenApiError = (err, req, res, next) => {
 const openApiError = (err, req, res, next) => {
   // call the next middleware function if the error is not an openapi error
   if (!isOpenApiError(err)) {
-    next(err);
+    return next(err);
   }
 
   const { status, errors } = err;
@@ -59,21 +59,20 @@ const openApiError = (err, req, res, next) => {
         errorCode,
         message,
         location,
-        params: { additionalProperty },
       } = error;
 
       if (errorCode === 'enum.openapi.validation') {
         details.push(`${path} must be one of ['${error.params.allowedValues.join("', '")}']`);
       } else if (errorCode === 'additionalProperties.openapi.validation') {
+        const { additionalProperty } = error.params;
         details.push(`Unrecognized property '${additionalProperty}' in path: '${path}', location: '${location}'`);
       } else {
         details.push(`Error in path: '${path}', location: '${location}', message: '${message}'`);
       }
     });
-    errorBuilder(res, 400, details);
-  } else {
-    errorHandler(res, err);
+    return errorBuilder(res, 400, details);
   }
+  return errorHandler(res, err);
 };
 
 /**
