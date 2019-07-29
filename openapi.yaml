@@ -46,15 +46,19 @@ paths:
           type: string
           required: false
           description: Query string to be used when searching through the contents of each note
-        - name: sortKey
+        - name: sort
           in: query
           type: string
           enum:
             - 'lastModified'
+            - '-lastModified'
             - 'source'
+            - '-source'
             - 'permissions'
+            - '-permissions'
             - 'contextType'
-          default: 'lastModified'
+            - '-contextType'
+          default: '-lastModified'
           required: false
           description: The key by which to sort the notes in the response
         - name: sources

@@ -56,7 +56,7 @@ const filterNotes = (rawNotes, queryParams) => {
     creatorId,
     q,
     sources,
-    sortKey,
+    sort,
     contextTypes,
   } = queryParams;
 
@@ -73,11 +73,13 @@ const filterNotes = (rawNotes, queryParams) => {
   };
   _.remove(rawNotes, note => !(_.overEvery(Object.values(filterPredicates))(note)));
 
-  // sort first by sortKey, and then by lastModified within each sorted group
+  const sortOrder = sort[0] === '-' ? 'desc' : 'asc';
+  const sortKey = sortOrder === 'asc' ? sort : sort.slice(1);
+  // sort first by sort parameter, and then by lastModified descending within each sorted group
   rawNotes = _.orderBy(
     rawNotes,
     [sortKey === 'contextType' ? it => getContextType(it) : sortKey, 'lastModified'],
-    [sortKey === 'lastModified' ? 'desc' : 'asc', 'desc'],
+    [sortOrder, 'desc'],
   );
   return rawNotes;
 };
