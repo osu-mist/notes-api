@@ -185,13 +185,16 @@ class integration_tests(unittest.TestCase):
             data = self.get_response(params).json()['data']
             # Validating each sort_field
             if len(data) > 1:
-                ascending = sort_field[0] != '-'
+                test = (
+                    self.assertGreaterEqual if sort_field[0] != '-'
+                    else self.assertLessEqual
+                )
                 if sort_field == 'lastModified':
-                    self.check_time_sort(data, ascending)
+                    self.check_time_sort(data, test)
                 elif sort_field in ['source', 'permissions']:
-                    self.check_alphabetical_sort(data, sort_field, ascending)
+                    self.check_alphabetical_sort(data, sort_field, test)
                 elif sort_field == 'contextType':
-                    self.check_context_type_sort(data, ascending)
+                    self.check_context_type_sort(data, test)
 
         # invalid sort field tests return 400
         invalid_sort_fields = [' ', 'lastmodified', 'random', 'contexttype']
@@ -199,41 +202,32 @@ class integration_tests(unittest.TestCase):
             params = {'studentId': student_id, 'sort': invalid_sort_field}
             self.get_response(params, 400, 'ErrorObject')
 
-    def check_time_sort(self, response, ascending):
+    def check_time_sort(self, response, test):
         format = '%Y-%m-%dT%H:%M:%S.%f%z'
         last_modified = response[0]['attributes']['lastModified']
         prev_element = datetime.strptime(last_modified, format)
         for resource in response:
             current_element = resource['attributes']['lastModified']
             current_element = datetime.strptime(current_element, format)
-            if ascending:
-                self.assertGreaterEqual(current_element, prev_element)
-            else:
-                self.assertLessEqual(current_element, prev_element)
+            test(current_element, prev_element)
             prev_element = current_element
 
-    def check_alphabetical_sort(self, response, sort_field, ascending):
+    def check_alphabetical_sort(self, response, sort_field, test):
         prev_element = response[0]['attributes'][sort_field]
         for resource in response:
             current_element = resource['attributes'][sort_field]
-            if ascending:
-                self.assertGreaterEqual(current_element, prev_element)
-            else:
-                self.assertLessEqual(current_element, prev_element)
+            test(current_element, prev_element)
             prev_element = current_element
 
-    def check_context_type_sort(self, response, ascending):
+    def check_context_type_sort(self, response, test):
         prev_element = None
         for resource in response:
             context = resource['attributes']['context']
             if context:
-                context_type = context['contextType']
+                current_element = context['contextType']
                 if prev_element:
-                    if ascending:
-                        self.assertGreaterEqual(context_type, prev_element)
-                    else:
-                        self.assertLessEqual(context_type, prev_element)
-                prev_element = context_type
+                    test(current_element, prev_element)
+                prev_element = current_element
 
     def query_source(self, student_id, sources):
         for source in sources:
