@@ -60,7 +60,7 @@ paths:
             - '-contextType'
           default: '-lastModified'
           required: false
-          description: The key by which to sort the notes in the response
+          description: "The key by which to sort the notes in the response. Values that start with '-' indicate descending order. Otherwise, order will be ascending."
         - name: sources
           in: query
           type: array

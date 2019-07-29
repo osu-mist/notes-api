@@ -186,7 +186,7 @@ class integration_tests(unittest.TestCase):
             # Validating each sort_field
             if len(data) > 1:
                 test = (
-                    self.assertGreaterEqual if sort_field[0] != '-'
+                    self.assertGreaterEqual if not sort_field.startswith('-')
                     else self.assertLessEqual
                 )
                 if sort_field == 'lastModified':

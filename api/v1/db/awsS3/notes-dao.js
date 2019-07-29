@@ -73,8 +73,8 @@ const filterNotes = (rawNotes, queryParams) => {
   };
   _.remove(rawNotes, note => !(_.overEvery(Object.values(filterPredicates))(note)));
 
-  const sortOrder = sort[0] === '-' ? 'desc' : 'asc';
-  const sortKey = sortOrder === 'asc' ? sort : sort.slice(1);
+  const sortOrder = _.startsWith(sort, '-') ? 'desc' : 'asc';
+  const sortKey = sort.match(/-?(.+)/)[1];
   // sort first by sort parameter, and then by lastModified descending within each sorted group
   rawNotes = _.orderBy(
     rawNotes,
