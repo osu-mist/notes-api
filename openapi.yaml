@@ -31,23 +31,24 @@ paths:
         - notes
       operationId: getNotes
       parameters:
-        - name: studentId
+        - name: filter[studentId]
           in: query
           type: string
           pattern: ^\d{9}$
           required: true
           description: 9-digit OSU ID of student whose notes will be retrieved
-        - name: creatorId
+        - name: filter[creatorId]
           in: query
           type: string
           pattern: ^\d{9}$
           required: false
           description: The 9-digit OSU ID of the advisor who created the note
-        - name: q
+        - name: filter[note][fuzzy]
           in: query
           type: string
           required: false
-          description: Query string to be used when searching through the contents of each note
+          description: Filter notes by fuzzy searching through their note
+            attribute
         - name: sort
           in: query
           type: string
@@ -62,16 +63,20 @@ paths:
             - '-contextType'
           default: '-lastModified'
           required: false
-          description: "The key by which to sort the notes in the response. Values that start with '-' indicate descending order. Otherwise, order will be ascending."
-        - name: sources
+          description: "The key by which to sort the notes in the response.
+            Values that start with '-' indicate descending order. Otherwise,
+            order will be ascending."
+        - name: filter[source][oneOf]
           in: query
           type: array
           items:
             type: string
             collectionFormat: csv
           required: false
-          description: 'A comma-separated list of sources/sub-sources to filter by. Each source has format: `source` or `source.subSource`'
-        - name: contextTypes
+          description: 'A comma-separated list of sources to filter by. Each
+            source may include a subSource. The format is: `source` or
+            `source.subSource`'
+        - name: filter[contextType][oneOf]
           in: query
           type: array
           items:
