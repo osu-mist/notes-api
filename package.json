@@ -54,7 +54,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "forever-monitor": "^1.7.1",
-    "gulp": "4.0.0",
+    "gulp": "^4.0.0",
     "gulp-eslint": "^5.0.0",
     "gulp-mocha": "^6.0.0",
     "pre-commit": "^1.2.2"
