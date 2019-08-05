@@ -35,8 +35,8 @@ const getJsonApiSerializer = (serializerArgs, data) => (
 );
 
 /**
- * @summary Serialize noteResources to JSON API
- * @function
+ * Serialize noteResources to JSON API
+ *
  * @param {[object]} rawNotes Raw data rows from data source
  * @param {object} query Query parameters
  * @returns {object} Serialized noteResources object
@@ -48,8 +48,8 @@ const serializeNotes = (rawNotes, query) => {
 };
 
 /**
- * @summary Serialize noteResource to JSON API
- * @function
+ * Serialize noteResource to JSON API
+ *
  * @param {object} rawNote Raw data row from data source
  * @returns {object} Serialized noteResource object
  */
