@@ -7,6 +7,11 @@ const { openapi: { paths } } = appRoot.require('utils/load-openapi');
 
 const notFoundMessage = 'A note with the specified noteId was not found.';
 
+/**
+ * GET note by ID
+ *
+ * @type {RequestHandler}
+ */
 const get = async (req, res) => {
   try {
     const { id } = req.params;
@@ -22,7 +27,9 @@ const get = async (req, res) => {
 };
 
 /**
- * @summary Patch note by ID
+ * PATCH note by ID
+ *
+ * @type {RequestHandler}
  */
 const patch = async (req, res) => {
   try {
@@ -39,6 +46,11 @@ const patch = async (req, res) => {
   }
 };
 
+/**
+ * DELETE note by ID
+ *
+ * @type {RequestHandler}
+ */
 const del = async (req, res) => {
   try {
     const { id } = req.params;

@@ -37,9 +37,9 @@ const getJsonApiSerializer = (serializerArgs, data) => (
 /**
  * @summary Serialize noteResources to JSON API
  * @function
- * @param {[Object]} rawNotes Raw data rows from data source
- * @param {Object} query Query parameters
- * @returns {Object} Serialized noteResources object
+ * @param {[object]} rawNotes Raw data rows from data source
+ * @param {object} query Query parameters
+ * @returns {object} Serialized noteResources object
  */
 const serializeNotes = (rawNotes, query) => {
   const topLevelSelfLink = paramsLink(noteResourceUrl, query);
@@ -50,8 +50,8 @@ const serializeNotes = (rawNotes, query) => {
 /**
  * @summary Serialize noteResource to JSON API
  * @function
- * @param {Object} rawNote Raw data row from data source
- * @returns {Object} Serialized noteResource object
+ * @param {object} rawNote Raw data row from data source
+ * @returns {object} Serialized noteResource object
  */
 const serializeNote = (rawNote) => {
   const topLevelSelfLink = resourcePathLink(noteResourceUrl, rawNote.id);

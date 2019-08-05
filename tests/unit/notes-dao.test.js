@@ -13,9 +13,9 @@ const { assert } = chai;
 
 /**
  * @summary Map a dot-separated string to an object in mock config
- * @param {Object} obj Object that will be accessed when getting property
- * @param {String} arg The dot-separated string of properties
- * @returns {Object} The value of the mock config's specified property
+ * @param {object} obj Object that will be accessed when getting property
+ * @param {string} arg The dot-separated string of properties
+ * @returns {object} The value of the mock config's specified property
  */
 const mockConfigGet = (obj, arg) => {
   const properties = arg.split('.');
