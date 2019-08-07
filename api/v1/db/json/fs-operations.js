@@ -4,10 +4,10 @@ const fs = require('fs');
 const { dbPath } = config.get('dataSources.json');
 
 /**
- * @summary Validate a file path and throw an error if invalid
- * @function
+ * Validate a file path and throw an error if invalid
+ *
  * @throws Throws an error if the file path is not valid
- * @param {string} path
+ * @param {string} path Path to file
  */
 const validateFilePath = async (path) => {
   fs.access(path, (err) => {
@@ -18,16 +18,17 @@ const validateFilePath = async (path) => {
 };
 
 /**
- * @summary Validate database file path
- * @function
+ * Validate database file path
+ *
+ * @returns {Promise} Promise that resolves when DB is valid and rejects when invalid
  */
 const validateJsonDb = () => validateFilePath(dbPath);
 
 /**
- * @summary Read a JSON file and return the contents as an object
- * @function
- * @param {string} filePath
- * @returns {Object} Contents of JSON file or undefined if the file doesn't exist
+ * Read a JSON file and return the contents as an object
+ *
+ * @param {string} filePath Path to file
+ * @returns {object} Contents of JSON file or undefined if the file doesn't exist
  */
 const readJsonFile = (filePath) => {
   if (fs.existsSync(filePath)) {
@@ -37,21 +38,21 @@ const readJsonFile = (filePath) => {
 };
 
 /**
- * @summary Write an object to a JSON file with formatting
- * @function
- * @param {string} filePath
- * @param {Object} data
- * @param {Object} options
+ * Write an object to a JSON file with formatting
+ *
+ * @param {string} filePath Path to file
+ * @param {object} data JSON object to write
+ * @param {object} options Additional options to pass to fs.writeFileSync()
  */
 const writeJsonFile = (filePath, data, options = {}) => {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), options);
 };
 
 /**
- * @summary Initialize a student directory with a counter starting at '1'
- * @function
- * @param {string} studentDirPath
- * @param {string} counterFilePath
+ * Initialize a student directory with a counter starting at '1'
+ *
+ * @param {string} studentDirPath Path to directory
+ * @param {string} counterFilePath Path to counter file
  */
 const initStudentDir = (studentDirPath, counterFilePath) => {
   if (!fs.existsSync(studentDirPath)) {
@@ -61,11 +62,11 @@ const initStudentDir = (studentDirPath, counterFilePath) => {
 };
 
 /**
- * @summary Get the value of a counter as a string
- * @function
- * @throws Throws an error if the counter file is invalid
- * @param {string} counterFilePath
- * @returns {string}
+ * Get the value of a counter as a string
+ *
+ * @throws Error if the counter file is invalid
+ * @param {string} counterFilePath The path to the counter file
+ * @returns {string} The value of the counter
  */
 const getCounter = (counterFilePath) => {
   // contents of counter file should be only digits followed by a newline
@@ -80,9 +81,9 @@ const getCounter = (counterFilePath) => {
 };
 
 /**
- * @summary Increment the value of a counter
- * @function
- * @param counterFilePath
+ * Increment the value of a counter
+ *
+ * @param {string} counterFilePath Path to counter file
  */
 const incrementCounter = (counterFilePath) => {
   const counter = getCounter(counterFilePath);
@@ -91,10 +92,10 @@ const incrementCounter = (counterFilePath) => {
 };
 
 /**
- * @summary Delete a file
- * @function
- * @param {string} filePath
- * @returns true if file was deleted and undefined if file was not found
+ * Delete a file
+ *
+ * @param {string} filePath Path to file
+ * @returns {boolean} True if file was deleted and undefined if file was not found
  */
 const deleteFile = (filePath) => {
   if (fs.existsSync(filePath)) {

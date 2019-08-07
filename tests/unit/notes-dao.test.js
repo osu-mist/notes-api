@@ -12,10 +12,11 @@ chai.use(chaiExclude);
 const { assert } = chai;
 
 /**
- * @summary Map a dot-separated string to an object in mock config
- * @param {Object} obj Object that will be accessed when getting property
- * @param {String} arg The dot-separated string of properties
- * @returns {Object} The value of the mock config's specified property
+ * Map a dot-separated string to an object in mock config
+ *
+ * @param {object} obj Object that will be accessed when getting property
+ * @param {string} arg The dot-separated string of properties
+ * @returns {object} The value of the mock config's specified property
  */
 const mockConfigGet = (obj, arg) => {
   const properties = arg.split('.');
@@ -34,8 +35,8 @@ const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
 sinon.restore();
 
 /**
- * @summary Validate the contents of a link
- * @function
+ * Validate the contents of a link
+ *
  * @param {string} link The link to be validated
  * @param {string} path A substring of the expected link occurring after the base path
  */

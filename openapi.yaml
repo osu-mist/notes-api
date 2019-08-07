@@ -19,6 +19,8 @@ externalDocs:
   url: https://github.com/osu-mist/notes-api
 produces:
   - application/json
+consumes:
+  - application/json
 paths:
   /notes:
     parameters:
@@ -94,8 +96,6 @@ paths:
       summary: Create a new note
       tags:
         - notes
-      consumes:
-        - application/json
       operationId: postNote
       parameters:
         - in: body
@@ -146,8 +146,6 @@ paths:
       summary: Edit an existing note
       tags:
         - notes
-      consumes:
-        - application/json
       operationId: patchNoteById
       parameters:
         - in: body

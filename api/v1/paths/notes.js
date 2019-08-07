@@ -6,7 +6,9 @@ const { errorHandler } = appRoot.require('errors/errors');
 const { openapi: { paths } } = appRoot.require('utils/load-openapi');
 
 /**
- * @summary Get notes
+ * GET notes
+ *
+ * @type {RequestHandler}
  */
 const get = async (req, res) => {
   try {
@@ -18,7 +20,9 @@ const get = async (req, res) => {
 };
 
 /**
- * @summary Post note
+ * POST note
+ *
+ * @type {RequestHandler}
  */
 const post = async (req, res) => {
   try {

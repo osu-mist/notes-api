@@ -12,19 +12,19 @@ const { dbPath } = config.get('dataSources.json');
 const localSourceName = 'advisorPortal';
 
 /**
- * @summary Parses studentId from noteId
- * @function
- * @param noteId
- * @returns {string}
+ * Parses studentId from noteId
+ *
+ * @param {string} noteId Note ID
+ * @returns {string} Student ID
  */
 const parseStudentId = noteId => noteId.split('-')[0];
 
 /**
- * @summary Filter notes using parameters
- * @function
- * @param {Object[]} rawNotes The list of notes to be filtered
- * @param {Object} queryParams Key-value pairs of query parameters and their values
- * @returns {Object[]} List of filtered notes
+ * Filter notes using parameters
+ *
+ * @param {object[]} rawNotes The list of notes to be filtered
+ * @param {object} queryParams Key-value pairs of query parameters and their values
+ * @returns {object[]} List of filtered notes
  */
 const filterNotes = (rawNotes, queryParams) => {
   // Safely access contextType
@@ -51,9 +51,9 @@ const filterNotes = (rawNotes, queryParams) => {
 };
 
 /**
- * @summary Return a list of notes filtered/sorted by query parameters
- * @function
- * @param {Object} query Query parameters
+ * Return a list of notes filtered/sorted by query parameters
+ *
+ * @param {object} query Query parameters
  * @returns {Promise} Promise object represents a list of notes
  */
 const getNotes = query => new Promise((resolve, reject) => {
@@ -79,10 +79,10 @@ const getNotes = query => new Promise((resolve, reject) => {
 });
 
 /**
- * @summary Fetch a note from the database by its noteId
- * @function
- * @param noteId
- * @returns {Object} The raw note from the DB
+ * Fetch a note from the database by its noteId
+ *
+ * @param {string} noteId Note ID
+ * @returns {object} The raw note from the DB
  */
 const fetchNote = (noteId) => {
   try {
@@ -95,12 +95,11 @@ const fetchNote = (noteId) => {
 };
 
 /**
- * @summary Write newContents to the note with id noteId
- * @function
- * @param noteId
- * @param newContents
- * @param failIfExists If true, the method will throw an error if the file
- *                     already exists
+ * Write newContents to the note with id noteId
+ *
+ * @param {string} noteId Note ID
+ * @param {string} newContents New contents
+ * @param {boolean} failIfExists If true, the method will throw an error if the file already exists
  */
 const writeNote = (noteId, newContents, failIfExists = false) => {
   const options = failIfExists ? { flag: 'wx' } : { flag: 'w' };
@@ -110,8 +109,8 @@ const writeNote = (noteId, newContents, failIfExists = false) => {
 };
 
 /**
- * @summary Return a specific note by noteId
- * @function
+ * Return a specific note by noteId
+ *
  * @param {string} noteId id of the note in the form: '{studentId}-{number}'
  * @returns {Promise} Promise object represents a specific note
  */
@@ -131,9 +130,9 @@ const getNoteById = noteId => new Promise((resolve, reject) => {
 });
 
 /**
- * @summary Create a new note
- * @function
- * @param body
+ * Create a new note
+ *
+ * @param {object} body New note
  * @returns {Promise} Promise object representing the new note
  */
 const postNote = body => new Promise((resolve, reject) => {
@@ -178,10 +177,10 @@ const postNote = body => new Promise((resolve, reject) => {
 });
 
 /**
- * @summary Patch a note by noteId
- * @function
- * @param noteId
- * @param body
+ * Patch a note by noteId
+ *
+ * @param {string} noteId Note ID
+ * @param {object} body PATCH body
  * @returns {Promise} Promise object that represents the patched note
  */
 const patchNoteById = (noteId, body) => new Promise((resolve, reject) => {
@@ -202,6 +201,12 @@ const patchNoteById = (noteId, body) => new Promise((resolve, reject) => {
   }
 });
 
+/**
+ * Delete a note by noteId
+ *
+ * @param {string} noteId Note ID
+ * @returns {Promise} Deletion promise
+ */
 const deleteNoteById = noteId => new Promise((resolve, reject) => {
   try {
     const studentId = parseStudentId(noteId);
