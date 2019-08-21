@@ -1,6 +1,6 @@
-const AWS = require('aws-sdk');
-const config = require('config');
-const _ = require('lodash');
+import AWS from 'aws-sdk';
+import config from 'config';
+import _ from 'lodash';
 
 const awsConfig = config.get('dataSources.awsS3');
 
@@ -189,7 +189,7 @@ const deleteObject = async (key, bucket = thisBucket) => {
   return withErrorHandler(async () => s3.deleteObject(params).promise(), { NotFound: undefined });
 };
 
-module.exports = {
+export {
   bucketExists,
   validateAwsS3,
   objectExists,

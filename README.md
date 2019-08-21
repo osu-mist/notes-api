@@ -29,10 +29,6 @@ This API allows operations for notes that advisors have made on students. Docume
 ### Installing
 
 ```shell
-# Using yarn (recommended)
-$ yarn
-
-# Using npm
 $ npm install
 ```
 
@@ -76,7 +72,39 @@ $ gulp test
 $ npm test
 ```
 
-## Incorporate updates from the skeleton
+### Type checking
+
+This API is configured to use [Flow static type checking](https://flow.org/).
+
+Check flow types:
+
+```shell
+# Using gulp
+$ gulp typecheck
+
+# Using npm
+$ npm run typecheck
+```
+
+## Babel
+
+This API uses [Babel](https://babeljs.io/) to transpile JavaScript code. After running, the transpiled code will be located in `dist/`. Source maps are also generated in the same directory. These contain references to the original source code for debugging purposes.
+
+Babel allows for newer ECMAScript syntax such as `import` and `export` from ES6. It also allows [Babel plugins](https://babeljs.io/docs/en/plugins) to be used.
+
+Compilation is done by the `babel` gulp task. This is handled automatically by other tasks but can be manually invoked:
+
+```shell
+# Using gulp
+$ gulp babel
+
+# Using npm
+$ npm run babel
+```
+
+## Base project off the skeleton
+
+### Base an existing project off / Incorporate updates from the skeleton
 
 1. Add the skeleton as a remote:
 
@@ -96,35 +124,4 @@ $ npm test
     $ git checkout feature/CO-1234-branch
     $ git merge skeleton/master
     $ git commit -v
-    ```
-
-## Docker
-
-[Dockerfile](Dockerfile) is also provided. To run the app in a container, install [Docker](https://www.docker.com/) first, then:
-
-1. Modify `WORKDIR` from the [Dockerfile](Dockerfile#L4-L5):
-
-    ```Dockerfile
-    # Copy folder to workspace
-    WORKDIR /usr/src/notes-api
-    COPY . /usr/src/notes-api
-    ```
-
-2. Build the docker image:
-
-    ```shell
-    $ docker build -t notes-api .
-    ```
-
-3. Run the app in a container:
-
-    ```shell
-    $ docker run -d \
-                 -p 8080:8080 \
-                 -p 8081:8081 \
-                 -v path/to/keytools/:/usr/src/notes-api/keytools:ro \
-                 -v "$PWD"/config:/usr/src/notes-api/config:ro \
-                 -v "$PWD"/logs:/usr/src/notes-api/logs \
-                 --name notes-api \
-                 notes-api
     ```

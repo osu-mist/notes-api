@@ -1,9 +1,7 @@
-const appRoot = require('app-root-path');
-const { assert } = require('chai');
-const _ = require('lodash');
-
-const rows = appRoot.require('tests/unit/test-data.json').validNotes;
-const { paginate } = appRoot.require('utils/paginator');
+import { assert } from 'chai';
+import paginate from 'utils/paginator';
+import _ from 'lodash';
+import { pets as rows } from './mock-data';
 
 /**
  * Repeats an assertion for all pages of the mock data

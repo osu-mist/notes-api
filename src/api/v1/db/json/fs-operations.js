@@ -1,5 +1,6 @@
-const config = require('config');
-const fs = require('fs');
+import fs from 'fs';
+
+import config from 'config';
 
 const { dbPath } = config.get('dataSources.json');
 
@@ -105,7 +106,7 @@ const deleteFile = (filePath) => {
   return undefined;
 };
 
-module.exports = {
+export {
   validateFilePath,
   validateJsonDb,
   readJsonFile,

@@ -1,12 +1,12 @@
-const appRoot = require('app-root-path');
-const AWS = require('aws-sdk');
-const chai = require('chai');
-const chaiExclude = require('chai-exclude');
-const chaiAsPromised = require('chai-as-promised');
-const config = require('config');
-const proxyquire = require('proxyquire');
-const sinon = require('sinon');
-const sinonChai = require('sinon-chai');
+import appRoot from 'app-root-path';
+import AWS from 'aws-sdk';
+import chai from 'chai';
+import chaiExclude from 'chai-exclude';
+import chaiAsPromised from 'chai-as-promised';
+import config from 'config';
+import proxyquire from 'proxyquire';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
 
 chai.should();
 chai.use(chaiExclude);
@@ -43,7 +43,7 @@ describe('Test aws-operations', () => {
    */
   const createS3Stub = (stubs) => {
     const s3Stub = sinon.stub(AWS, 'S3').returns(stubs);
-    awsOperations = proxyquire(`${appRoot}/api/v1/db/awsS3/aws-operations`, {
+    awsOperations = proxyquire(`${appRoot}/dist/api/v1/db/awsS3/aws-operations`, {
       config: { get: configGetStub },
       'aws-sdk': { S3: s3Stub },
     });
