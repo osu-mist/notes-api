@@ -29,7 +29,6 @@
     "config": "^2.0.1",
     "deasync": "^0.1.14",
     "decode-uri-component": "^0.2.0",
-    "eslint-plugin-jsdoc": "^15.6.1",
     "express": "^4.16.3",
     "express-basic-auth": "^1.1.7",
     "express-openapi": "^4.6.5",
@@ -40,7 +39,6 @@
     "moment": "^2.22.2",
     "query-string": "^6.2.0",
     "simple-git": "^1.96.0",
-    "sinon": "^7.2.2",
     "swagger-parser": "^6.0.3",
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
@@ -48,14 +46,20 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "chai-exclude": "^1.0.12",
+    "chai-as-promised": "^7.1.1",
+    "chai-exclude": "^2.0.2",
     "eslint": "^5.6.0",
     "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-chai-friendly": "^0.4.1",
     "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsdoc": "^15.8.0",
     "forever-monitor": "^1.7.1",
     "gulp": "^4.0.0",
     "gulp-eslint": "^5.0.0",
     "gulp-mocha": "^6.0.0",
-    "pre-commit": "^1.2.2"
+    "pre-commit": "^1.2.2",
+    "proxyquire": "^2.1.1",
+    "sinon": "^7.4.1",
+    "sinon-chai": "^3.3.0"
   }
 }

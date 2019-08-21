@@ -2,7 +2,9 @@
 
 This API allows operations for notes that advisors have made on students. Documentation for this API is contained in the [OpenAPI specification](./openapi.yaml).
 
-## Prerequisites
+## Getting Started
+
+### Prerequisites
 
 1. Install Node.js from [nodejs.org](https://nodejs.org/en/).
 2. Generate a self signed certificate with [OpenSSL](https://www.openssl.org/):
@@ -24,7 +26,7 @@ This API allows operations for notes that advisors have made on students. Docume
     | `${API_USER}` | The HTTP Basic username used to authenticate API calls. |
     | `${API_PASSWD}` | The HTTP Basic password used to authenticate API calls. |
 
-## Installing
+### Installing
 
 ```shell
 # Using yarn (recommended)
@@ -34,7 +36,7 @@ $ yarn
 $ npm install
 ```
 
-## Usage
+### Usage
 
 Run the application:
 
