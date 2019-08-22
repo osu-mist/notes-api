@@ -12,9 +12,15 @@ const noteResourcePath = 'notes';
 const noteResourceUrl = resourcePathLink(apiBaseUrl, noteResourcePath);
 
 // Preserve the string format between the database and the serialized object during serialization
-const keyForAttribute = string => string;
+const keyForAttribute = _.identity;
 const enableDataLinks = true;
 
+/**
+ * Get serializer args for JsonApiSerializer
+ *
+ * @param {String} topLevelSelfLink Top-level self link
+ * @returns {object} Serializer args
+ */
 const getSerializerArgs = topLevelSelfLink => (
   {
     identifierField: 'id',
@@ -26,6 +32,13 @@ const getSerializerArgs = topLevelSelfLink => (
   }
 );
 
+/**
+ * Creates a new JsonApiSerializer
+ *
+ * @param {object} serializerArgs The serializer args
+ * @param {object} data Raw data to be serialized
+ * @returns {object} Serializer
+ */
 const getJsonApiSerializer = (serializerArgs, data) => (
   new JsonApiSerializer(
     noteResourceType,
@@ -36,7 +49,7 @@ const getJsonApiSerializer = (serializerArgs, data) => (
 /**
  * Serialize noteResources to JSON API
  *
- * @param {[object]} rawNotes Raw data rows from data source
+ * @param {object[]} rawNotes Raw data rows from data source
  * @param {object} query Query parameters
  * @returns {object} Serialized noteResources object
  */
