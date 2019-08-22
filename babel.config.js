@@ -16,6 +16,12 @@ const plugins = [
     {
       root: ['src', '.'],
       extensions: ['.js', '.json'],
+      transformFunctions: [
+        'require',
+        'require.resolve',
+        'System.import',
+        'proxyquire',
+      ],
     },
   ],
 ];

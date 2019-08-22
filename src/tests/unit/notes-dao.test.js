@@ -1,12 +1,11 @@
-const appRoot = require('app-root-path');
-const chai = require('chai');
-const chaiExclude = require('chai-exclude');
-const config = require('config');
-const fs = require('fs');
-const _ = require('lodash');
-const sinon = require('sinon');
+import chai from 'chai';
+import chaiExclude from 'chai-exclude';
+import config from 'config';
+import _ from 'lodash';
+import proxyquire from 'proxyquire';
+import sinon from 'sinon';
 
-const testData = require('./test-data');
+import testData from './test-data';
 
 chai.use(chaiExclude);
 const { assert } = chai;
@@ -25,14 +24,9 @@ const mockConfigGet = (obj, arg) => {
     : mockConfigGet(obj[properties[0]], properties.slice(1).join('.'));
 };
 
-const mockConfig = () => sinon.replace(config, 'get', arg => (
+const mockConfig = () => sinon.stub(config, 'get').callsFake(arg => (
   mockConfigGet(testData.mockConfig, arg)
 ));
-
-mockConfig();
-const fsOps = appRoot.require('api/v1/db/json/fs-operations');
-const notesDAO = appRoot.require('api/v1/db/json/notes-dao');
-sinon.restore();
 
 /**
  * Validate the contents of a link
@@ -45,9 +39,27 @@ const validateLink = (link, path) => {
   assert.strictEqual(link, `${protocol}://${hostname}/v1/notes${path}`);
 };
 
+afterEach(() => sinon.restore());
+
 describe('Test notes-dao', () => {
+  let configGetStub;
+  let notesDAO;
+
+  beforeEach(() => { configGetStub = mockConfig(); });
+
+  const stubNotesDao = (stubs) => {
+    notesDAO = proxyquire('api/v1/db/json/notes-dao', {
+      config: {
+        get: configGetStub,
+      },
+      ...stubs,
+    });
+  };
+
   describe('Test filterNotes', () => {
     const rawNotes = testData.validNotes;
+
+    beforeEach(() => stubNotesDao({}));
 
     it('empty queryParams', () => {
       const queryParams = {};
@@ -81,9 +93,19 @@ describe('Test notes-dao', () => {
 
   describe('Test getNotes', () => {
     it('no optional parameters', async () => {
-      sinon.replace(fs, 'existsSync', () => true);
-      sinon.replace(fs, 'readdirSync', () => ['test.json']);
-      sinon.replace(fsOps, 'readJsonFile', () => testData.validNotes[0]);
+      const existsSyncStub = sinon.stub().returns(true);
+      const readdirSyncStub = sinon.stub().returns(['test.json']);
+      const readJsonFileStub = sinon.stub().returns(testData.validNotes[0]);
+      const stubs = {
+        fs: {
+          existsSync: existsSyncStub,
+          readdirSync: readdirSyncStub,
+        },
+        './fs-operations': {
+          readJsonFile: readJsonFileStub,
+        },
+      };
+      stubNotesDao(stubs);
       const result = await notesDAO.getNotes({ studentId: '111111111' });
       assert.hasAllKeys(result, ['data', 'links']);
       validateLink(result.links.self, '?studentId=111111111');
@@ -93,7 +115,13 @@ describe('Test notes-dao', () => {
 
   describe('Test getNoteById', () => {
     it('valid ID', async () => {
-      sinon.replace(fsOps, 'readJsonFile', () => testData.validNotes[0]);
+      const readJsonFileStub = sinon.stub().returns(testData.validNotes[0]);
+      const stubs = {
+        './fs-operations': {
+          readJsonFile: readJsonFileStub,
+        },
+      };
+      stubNotesDao(stubs);
       const result = await notesDAO.getNoteById('000000000');
       assert.deepEqualExcluding(result.data.attributes, testData.validNotes[0], ['id']);
     });
@@ -102,13 +130,16 @@ describe('Test notes-dao', () => {
   describe('Test postNote', () => {
     const testAttributes = testData.validPostBody.data.attributes;
     it('valid object', async () => {
-      _.forEach(['writeJsonFile', 'initStudentDir', 'incrementCounter'], (it) => {
-        sinon.replace(fsOps, it, () => null);
-      });
-      sinon.replace(fsOps, 'getCounter', () => '0');
-      sinon.replace(
-        fsOps, 'readJsonFile', () => Object.assign({ id: '000000000' }, testAttributes),
-      );
+      const stubs = {
+        './fs-operations': {
+          writeJsonFile: sinon.stub().returns(null),
+          initStudentDir: sinon.stub().returns(null),
+          incrementCounter: sinon.stub().returns(null),
+          getCounter: sinon.stub().returns('0'),
+          readJsonFile: sinon.stub().returns({ id: '000000000', ...testAttributes }),
+        },
+      };
+      stubNotesDao(stubs);
       const result = await notesDAO.postNote(testData.validPostBody);
       assert.deepEqualExcluding(result.data.attributes, testAttributes, ['source']);
       validateLink(result.links.self, '/000000000');
@@ -119,10 +150,13 @@ describe('Test notes-dao', () => {
   describe('Test patchNoteById', () => {
     const testAttributes = testData.validPatchBody.data.attributes;
     it('valid object, valid ID', async () => {
-      sinon.replace(fsOps, 'writeJsonFile', () => null);
-      sinon.replace(
-        fsOps, 'readJsonFile', () => Object.assign({ id: '000000000' }, testAttributes),
-      );
+      const stubs = {
+        './fs-operations': {
+          writeJsonFile: sinon.stub().returns(null),
+          readJsonFile: sinon.stub().returns({ id: '000000000', ...testAttributes }),
+        },
+      };
+      stubNotesDao(stubs);
       const result = await notesDAO.patchNoteById('000000000', testAttributes);
       _.forEach(['note', 'permissions'], (it) => {
         assert.equal(result.data.attributes[it], testAttributes[it]);
@@ -132,13 +166,14 @@ describe('Test notes-dao', () => {
 
   describe('Test deleteNoteById', () => {
     it('valid ID', async () => {
-      sinon.replace(fsOps, 'deleteFile', () => true);
+      const stubs = {
+        './fs-operations': {
+          deleteFile: sinon.stub().returns(true),
+        },
+      };
+      stubNotesDao(stubs);
       const result = await notesDAO.deleteNoteById('000000000');
       assert.equal(result, true);
     });
   });
 });
-
-beforeEach(() => mockConfig());
-
-afterEach(() => sinon.restore());
