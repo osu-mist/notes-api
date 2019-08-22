@@ -1,9 +1,9 @@
-const appRoot = require('app-root-path');
+import { errorHandler } from 'errors/errors';
+import { openapi } from 'utils/load-openapi';
 
-const notesDAO = require('../db/awsS3/notes-dao');
+import * as notesDAO from '../db/awsS3/notes-dao';
 
-const { errorHandler } = appRoot.require('errors/errors');
-const { openapi: { paths } } = appRoot.require('utils/load-openapi');
+const { paths } = openapi;
 
 /**
  * GET notes
@@ -37,4 +37,4 @@ const post = async (req, res) => {
 get.apiDoc = paths['/notes'].get;
 post.apiDoc = paths['/notes'].post;
 
-module.exports = { get, post };
+export { get, post };

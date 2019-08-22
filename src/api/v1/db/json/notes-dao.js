@@ -1,11 +1,11 @@
-const config = require('config');
-const fs = require('fs');
-const _ = require('lodash');
-const moment = require('moment');
-const path = require('path');
+import config from 'config';
+import fs from 'fs';
+import _ from 'lodash';
+import moment from 'moment';
+import path from 'path';
 
-const fsOps = require('./fs-operations');
-const { serializeNotes, serializeNote } = require('../../serializers/notes-serializer');
+import * as fsOps from './fs-operations';
+import { serializeNotes, serializeNote } from '../../serializers/notes-serializer';
 
 const { dbPath } = config.get('dataSources.json');
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
@@ -217,7 +217,7 @@ const deleteNoteById = noteId => new Promise((resolve, reject) => {
   }
 });
 
-module.exports = {
+export {
   getNotes,
   postNote,
   getNoteById,

@@ -1,9 +1,9 @@
-const appRoot = require('app-root-path');
+import { errorBuilder, errorHandler } from 'errors/errors';
+import { openapi } from 'utils/load-openapi';
 
-const notesDAO = require('../../db/awsS3/notes-dao');
+import * as notesDAO from '../../db/awsS3/notes-dao';
 
-const { errorBuilder, errorHandler } = appRoot.require('errors/errors');
-const { openapi: { paths } } = appRoot.require('utils/load-openapi');
+const { paths } = openapi;
 
 const notFoundMessage = 'A note with the specified noteId was not found.';
 
@@ -69,4 +69,4 @@ get.apiDoc = paths['/notes/{noteId}'].get;
 patch.apiDoc = paths['/notes/{noteId}'].patch;
 del.apiDoc = paths['/notes/{noteId}'].del;
 
-module.exports = { get, patch, del };
+export { get, patch, del };

@@ -1,9 +1,9 @@
-const _ = require('lodash');
-const moment = require('moment');
-const uuidv4 = require('uuid/v4');
+import _ from 'lodash';
+import moment from 'moment';
+import uuidv4 from 'uuid/v4';
 
-const awsOps = require('./aws-operations');
-const { serializeNote, serializeNotes } = require('../../serializers/notes-serializer');
+import * as awsOps from './aws-operations';
+import { serializeNote, serializeNotes } from '../../serializers/notes-serializer';
 
 // This is the value of the 'source' field that will be set for all notes fetched from the local DB.
 const localSourceName = 'advisorPortal';
@@ -206,7 +206,7 @@ const deleteNoteById = async (noteId) => {
   return true;
 };
 
-module.exports = {
+export {
   getNotes,
   postNote,
   getNoteById,

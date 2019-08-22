@@ -1,10 +1,9 @@
-const appRoot = require('app-root-path');
-const _ = require('lodash');
-const JsonApiSerializer = require('jsonapi-serializer').Serializer;
+import _ from 'lodash';
+import { Serializer as JsonApiSerializer } from 'jsonapi-serializer';
 
-const { serializerOptions } = appRoot.require('utils/jsonapi');
-const { openapi } = appRoot.require('utils/load-openapi');
-const { apiBaseUrl, resourcePathLink, paramsLink } = appRoot.require('utils/uri-builder');
+import { serializerOptions } from 'utils/jsonapi';
+import { openapi } from 'utils/load-openapi';
+import { apiBaseUrl, resourcePathLink, paramsLink } from 'utils/uri-builder';
 
 const noteResourceProp = openapi.definitions.NoteResource.properties;
 const noteResourceType = noteResourceProp.type.enum[0];
@@ -58,4 +57,4 @@ const serializeNote = (rawNote) => {
   const serializerArgs = getSerializerArgs(topLevelSelfLink);
   return getJsonApiSerializer(serializerArgs, rawNote);
 };
-module.exports = { serializeNotes, serializeNote };
+export { serializeNotes, serializeNote };
