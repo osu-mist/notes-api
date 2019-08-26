@@ -1,4 +1,4 @@
-# Notes API ![version](https://img.shields.io/badge/version-v1-blue.svg) [![openapi](https://img.shields.io/badge/openapi-2.0-green.svg)](./openapi.yaml) ![node](https://img.shields.io/badge/node-10.13-brightgreen.svg)
+# Notes API ![version](https://img.shields.io/badge/version-v1-blue.svg) [![openapi](https://img.shields.io/badge/openapi-2.0-green.svg)](./openapi.yaml) ![node](https://img.shields.io/badge/node-10.13-brightgreen.svg)![npm](https://img.shields.io/badge/npm-6.11.1-orange.svg)
 
 This API allows operations for notes that advisors have made on students. Documentation for this API is contained in the [OpenAPI specification](./openapi.yaml).
 
@@ -37,10 +37,10 @@ $ npm install
 Run the application:
 
   ```shell
-  # Run linting and testing tasks before starting the app
-  $ gulp run
+  # Build and run the app
+  $ gulp devRun
 
-  # Run the app without running linting and testing tasks (only for development)
+  # Run the app without building
   $ gulp start
   ```
 
@@ -58,7 +58,8 @@ $ gulp lint
 $ npm run lint
 ```
 
-> Note: We are following [Airbnb's style](https://github.com/airbnb/javascript) as the JavaScript style guide.
+> Note: We use [Airbnb's style](https://github.com/airbnb/javascript) as a base style guide.
+> Additional rules and modifications can be found in [.eslintrc.yml](./.eslintrc.yml).
 
 ### Testing
 
@@ -101,6 +102,17 @@ $ gulp babel
 # Using npm
 $ npm run babel
 ```
+
+### Resolving Paths
+
+This skeleton uses
+[babel-plugin-module-resolver](https://github.com/tleunen/babel-plugin-module-resolver) to resolve
+paths. The list of functions that use this plugin can be found in
+[babel.config.js](./babel.config.js) under `transformFunctions`.
+
+> Note: `proxyquire` is included but only the path given by the first argument to this function will
+> resolve correctly. The keys for each dependency path in the second argument must be relative
+> paths.
 
 ## Base project off the skeleton
 
