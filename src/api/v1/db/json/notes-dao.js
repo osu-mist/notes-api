@@ -17,7 +17,7 @@ const localSourceName = 'advisorPortal';
  * @param {string} noteId Note ID
  * @returns {string} Student ID
  */
-const parseStudentId = noteId => noteId.split('-')[0];
+const parseStudentId = (noteId) => noteId.split('-')[0];
 
 /**
  * Filter notes using parameters
@@ -28,25 +28,25 @@ const parseStudentId = noteId => noteId.split('-')[0];
  */
 const filterNotes = (rawNotes, queryParams) => {
   // Safely access contextType
-  const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
+  const getContextType = (rawNote) => (rawNote.context ? rawNote.context.contextType : null);
 
   const {
     creatorId, q, sources, sortKey, contextTypes,
   } = queryParams;
 
-  rawNotes = creatorId ? _.filter(rawNotes, it => it.creatorId === creatorId) : rawNotes;
+  rawNotes = creatorId ? _.filter(rawNotes, (it) => it.creatorId === creatorId) : rawNotes;
 
   rawNotes = contextTypes
-    ? _.filter(rawNotes, it => _.includes(contextTypes, getContextType(it)))
+    ? _.filter(rawNotes, (it) => _.includes(contextTypes, getContextType(it)))
     : rawNotes;
-  rawNotes = q ? _.filter(rawNotes, it => _.includes(it.note, q)) : rawNotes;
+  rawNotes = q ? _.filter(rawNotes, (it) => _.includes(it.note, q)) : rawNotes;
   // sort first by sortKey, and then by lastModified within each sorted group
   rawNotes = _.orderBy(
     rawNotes,
-    [sortKey === 'contextType' ? it => getContextType(it) : sortKey, 'lastModified'],
+    [sortKey === 'contextType' ? (it) => getContextType(it) : sortKey, 'lastModified'],
     [sortKey === 'lastModified' ? 'desc' : 'asc', 'desc'],
   );
-  rawNotes = sources ? _.filter(rawNotes, it => _.includes(sources, it.source)) : rawNotes;
+  rawNotes = sources ? _.filter(rawNotes, (it) => _.includes(sources, it.source)) : rawNotes;
   return rawNotes;
 };
 
@@ -56,12 +56,12 @@ const filterNotes = (rawNotes, queryParams) => {
  * @param {object} query Query parameters
  * @returns {Promise} Promise object represents a list of notes
  */
-const getNotes = query => new Promise((resolve, reject) => {
+const getNotes = (query) => new Promise((resolve, reject) => {
   try {
     const { studentId } = query;
     const studentDirPath = `${dbPath}/${studentId}`;
     let noteFiles = fs.existsSync(studentDirPath) ? fs.readdirSync(studentDirPath) : [];
-    noteFiles = _.filter(noteFiles, it => path.extname(it).toLowerCase() === '.json');
+    noteFiles = _.filter(noteFiles, (it) => path.extname(it).toLowerCase() === '.json');
 
     let rawNotes = [];
     _.forEach(noteFiles, (file) => {
@@ -114,7 +114,7 @@ const writeNote = (noteId, newContents, failIfExists = false) => {
  * @param {string} noteId id of the note in the form: '{studentId}-{number}'
  * @returns {Promise} Promise object represents a specific note
  */
-const getNoteById = noteId => new Promise((resolve, reject) => {
+const getNoteById = (noteId) => new Promise((resolve, reject) => {
   try {
     const rawNote = fetchNote(noteId);
     if (!rawNote) {
@@ -135,7 +135,7 @@ const getNoteById = noteId => new Promise((resolve, reject) => {
  * @param {object} body New note
  * @returns {Promise} Promise object representing the new note
  */
-const postNote = body => new Promise((resolve, reject) => {
+const postNote = (body) => new Promise((resolve, reject) => {
   try {
     const { attributes } = body.data;
     const {
@@ -207,7 +207,7 @@ const patchNoteById = (noteId, body) => new Promise((resolve, reject) => {
  * @param {string} noteId Note ID
  * @returns {Promise} Deletion promise
  */
-const deleteNoteById = noteId => new Promise((resolve, reject) => {
+const deleteNoteById = (noteId) => new Promise((resolve, reject) => {
   try {
     const studentId = parseStudentId(noteId);
     const noteFilePath = `${dbPath}/${studentId}/${noteId}.json`;

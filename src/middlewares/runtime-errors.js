@@ -33,7 +33,7 @@ const customOpenApiError = (err, req, res, next) => {
     const details = [];
     _.forEach(errors, (error) => {
       const { path, errorCode } = error;
-      const isNineDigitPath = _.some(nineDigitIds, it => _.includes(path, it));
+      const isNineDigitPath = _.some(nineDigitIds, (it) => _.includes(path, it));
       if (isNineDigitPath && errorCode === 'pattern.openapi.validation') {
         details.push(`${path} must be 9 digits`);
         handledErrors.push(error);

@@ -14,7 +14,7 @@ const localSourceName = 'advisorPortal';
  * @param {string} noteId Note ID
  * @returns {string} Student ID
  */
-const parseStudentId = noteId => noteId.split('-')[0];
+const parseStudentId = (noteId) => noteId.split('-')[0];
 
 /**
  * Fetch a note from the database by its noteId
@@ -51,7 +51,7 @@ const writeNote = async (noteId, newContents) => {
  */
 const filterNotes = (rawNotes, queryParams) => {
   // Safely access contextType
-  const getContextType = rawNote => (rawNote.context ? rawNote.context.contextType : null);
+  const getContextType = (rawNote) => (rawNote.context ? rawNote.context.contextType : null);
   const {
     creatorId,
     q,
@@ -61,24 +61,24 @@ const filterNotes = (rawNotes, queryParams) => {
   } = queryParams;
 
   const filterPredicates = {
-    creatorId: note => !creatorId || note.creatorId === creatorId,
-    contextTypes: note => !contextTypes || _.includes(contextTypes, getContextType(note)),
-    q: note => !q || _.includes(note.note, q),
-    sources: note => (
+    creatorId: (note) => !creatorId || note.creatorId === creatorId,
+    contextTypes: (note) => !contextTypes || _.includes(contextTypes, getContextType(note)),
+    q: (note) => !q || _.includes(note.note, q),
+    sources: (note) => (
       !sources || _.some(sources, (it) => {
         const [source, subSource] = it.split('.');
         return (note.source === source) && (!subSource || note.subSource === subSource);
       })
     ),
   };
-  _.remove(rawNotes, note => !(_.overEvery(Object.values(filterPredicates))(note)));
+  _.remove(rawNotes, (note) => !(_.overEvery(Object.values(filterPredicates))(note)));
 
   const sortOrder = _.startsWith(sort, '-') ? 'desc' : 'asc';
   const sortKey = sort.match(/-?(.+)/)[1];
   // sort first by sort parameter, and then by lastModified descending within each sorted group
   rawNotes = _.orderBy(
     rawNotes,
-    [sortKey === 'contextType' ? it => getContextType(it) : sortKey, 'lastModified'],
+    [sortKey === 'contextType' ? (it) => getContextType(it) : sortKey, 'lastModified'],
     [sortOrder, 'desc'],
   );
   return rawNotes;
@@ -95,8 +95,8 @@ const getNotes = async (query) => {
   const prefix = `${studentId}/`;
   const objects = await awsOps.listObjects({ Prefix: prefix });
 
-  const objectKeys = _.map(objects.Contents, it => it.Key);
-  _.remove(objectKeys, it => _.last(it) === '/');
+  const objectKeys = _.map(objects.Contents, (it) => it.Key);
+  _.remove(objectKeys, (it) => _.last(it) === '/');
 
   let rawNotes = [];
   await Promise.all(_.map(objectKeys, async (it) => {

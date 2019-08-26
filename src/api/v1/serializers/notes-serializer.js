@@ -21,7 +21,7 @@ const enableDataLinks = true;
  * @param {String} topLevelSelfLink Top-level self link
  * @returns {object} Serializer args
  */
-const getSerializerArgs = topLevelSelfLink => (
+const getSerializerArgs = (topLevelSelfLink) => (
   {
     identifierField: 'id',
     resourceKeys: noteResourceKeys,

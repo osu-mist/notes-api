@@ -24,7 +24,7 @@ const mockConfigGet = (obj, arg) => {
     : mockConfigGet(obj[properties[0]], properties.slice(1).join('.'));
 };
 
-const mockConfig = () => sinon.stub(config, 'get').callsFake(arg => (
+const mockConfig = () => sinon.stub(config, 'get').callsFake((arg) => (
   mockConfigGet(testData.mockConfig, arg)
 ));
 
@@ -70,21 +70,21 @@ describe('Test notes-dao', () => {
       _.forEach(testData.validQueryParams.q, (it) => {
         const queryParams = { q: it };
         const result = notesDAO.filterNotes(rawNotes, queryParams);
-        _.forEach(result, note => assert.include(note.note, queryParams.q));
+        _.forEach(result, (note) => assert.include(note.note, queryParams.q));
       });
     });
     it('filter using sources', () => {
       _.forEach(testData.validQueryParams.sources, (it) => {
         const queryParams = { sources: it };
         const result = notesDAO.filterNotes(rawNotes, queryParams);
-        _.forEach(result, note => assert.include(queryParams.sources, note.source));
+        _.forEach(result, (note) => assert.include(queryParams.sources, note.source));
       });
     });
     it('filter using contextTypes', () => {
       _.forEach(testData.validQueryParams.contextTypes, (it) => {
         const queryParams = { contextTypes: it };
         const result = notesDAO.filterNotes(rawNotes, queryParams);
-        _.forEach(result, note => assert.include(
+        _.forEach(result, (note) => assert.include(
           queryParams.contextTypes, note.context.contextType,
         ));
       });
