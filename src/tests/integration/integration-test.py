@@ -81,10 +81,10 @@ class integration_tests(unittest.TestCase):
                     endpoint=f'/{note_id}'
                 )
 
-    # Test case: GET /notes?studentId
+    # Test case: GET /notes?filter[studentId]
     def test_get_notes(self):
         for student_id in self.test_cases['valid_student_ids']:
-            params = {'studentId': student_id}
+            params = {'filter[studentId]': student_id}
             response = self.get_response(params)
 
             creator_ids = set()
@@ -139,11 +139,14 @@ class integration_tests(unittest.TestCase):
     def test_get_notes_invalid_student_ids(self, endpoint='/notes'):
         invalid_student_ids = self.test_cases['invalid_student_ids']
         for student_id in invalid_student_ids:
-            self.get_response({'studentId': student_id}, 400, 'ErrorObject')
+            self.get_response({'filter[studentId]': student_id}, 400, 'ErrorObject')
 
     def query_creator_id(self, student_id, creator_ids, endpoint='/notes'):
         for creator_id in creator_ids:
-            params = {'studentId': student_id, 'creatorId': creator_id}
+            params = {
+                'filter[studentId]': student_id,
+                'filter[creatorId]': creator_id
+            }
             response = self.get_response(params)
             # Validating the creatorId requested is the same creatorId received
             for resource in response.json()['data']:
@@ -152,7 +155,10 @@ class integration_tests(unittest.TestCase):
 
         # invalid tests returns 400
         for invalid_creator_id in self.test_cases['invalid_student_ids']:
-            params = {'studentId': student_id, 'creatorId': invalid_creator_id}
+            params = {
+                'filter[studentId]': student_id,
+                'filter[creatorId]': invalid_creator_id
+            }
             self.get_response(params, 400, 'ErrorObject')
 
     def query_string_search(self, student_id, notes, endpoint='/notes'):
@@ -160,7 +166,10 @@ class integration_tests(unittest.TestCase):
             start_idx = random.randint(0, len(note) - 1)
             end_idx = random.randint(start_idx + 1, len(note))
             q = note[start_idx:end_idx]
-            params = {'studentId': student_id, 'q': q}
+            params = {
+                'filter[studentId]': student_id,
+                'filter[note][fuzzy]': q
+            }
             response = self.get_response(params)
             # Validating the search word requested exist in the notes received
             self.assertGreater(len(response.json()['data']), 0)
@@ -181,7 +190,7 @@ class integration_tests(unittest.TestCase):
         sort_fields.extend(list(map(lambda x: f'-{x}', sort_fields)))
 
         for sort_field in sort_fields:
-            params = {'studentId': student_id, 'sort': sort_field}
+            params = {'filter[studentId]': student_id, 'sort': sort_field}
             data = self.get_response(params).json()['data']
             # Validating each sort_field
             if len(data) > 1:
@@ -199,7 +208,10 @@ class integration_tests(unittest.TestCase):
         # invalid sort field tests return 400
         invalid_sort_fields = [' ', 'lastmodified', 'random', 'contexttype']
         for invalid_sort_field in invalid_sort_fields:
-            params = {'studentId': student_id, 'sort': invalid_sort_field}
+            params = {
+                'filter[studentId]': student_id,
+                'sort': invalid_sort_field
+            }
             self.get_response(params, 400, 'ErrorObject')
 
     def check_time_sort(self, response, test):
@@ -231,7 +243,10 @@ class integration_tests(unittest.TestCase):
 
     def query_source(self, student_id, sources):
         for source in sources:
-            params = {'studentId': student_id, 'sources': source}
+            params = {
+                'filter[studentId]': student_id,
+                'filter[source][oneOf]': source
+            }
             response = self.get_response(params)
             # Validating the source requested is the same source
             for resource in response.json()['data']:
@@ -242,7 +257,10 @@ class integration_tests(unittest.TestCase):
             num_sources = random.randint(2, len(sources))
             sources_sample = random.sample(sources, num_sources)
             sources = ','.join(sources_sample)
-            params = {'studentId': student_id, 'sources': sources}
+            params = {
+                'filter[studentId]': student_id,
+                'filter[source][oneOf]': sources
+            }
             response = self.get_response(params)
             for resource in response.json()['data']:
                 actual_source = resource['attributes']['source']
@@ -250,7 +268,10 @@ class integration_tests(unittest.TestCase):
 
     def query_context_type(self, student_id, context_types, endpoint='/notes'):
         for context_type in context_types:
-            params = {'studentId': student_id, 'contextTypes': context_type}
+            params = {
+                'filter[studentId]': student_id,
+                'filter[contextType][oneOf]': context_type
+            }
             response = self.get_response(params)
             # Validating the contextType requested is the same contextType
             # received
@@ -280,7 +301,10 @@ class integration_tests(unittest.TestCase):
             subsets = random.sample(subsets, 10)
         for subset in subsets:
             context_types = ','.join(subset)
-            params = {'studentId': student_id, 'contextTypes': context_types}
+            params = {
+                'filter[studentId]': student_id,
+                'filter[contextType][oneOf]': context_types
+            }
             response = self.get_response(params)
             for resource in response.json()['data']:
                 context = resource['attributes']['context']

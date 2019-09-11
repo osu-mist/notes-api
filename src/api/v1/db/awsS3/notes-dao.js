@@ -53,17 +53,17 @@ const filterNotes = (rawNotes, queryParams) => {
   // Safely access contextType
   const getContextType = (rawNote) => (rawNote.context ? rawNote.context.contextType : null);
   const {
-    creatorId,
-    q,
-    sources,
+    'filter[creatorId]': creatorId,
+    'filter[note][fuzzy]': noteQuery,
+    'filter[source][oneOf]': sources,
+    'filter[contextType][oneOf]': contextTypes,
     sort,
-    contextTypes,
   } = queryParams;
 
   const filterPredicates = {
     creatorId: (note) => !creatorId || note.creatorId === creatorId,
     contextTypes: (note) => !contextTypes || _.includes(contextTypes, getContextType(note)),
-    q: (note) => !q || _.includes(note.note, q),
+    noteQuery: (note) => !noteQuery || _.includes(note.note, noteQuery),
     sources: (note) => (
       !sources || _.some(sources, (it) => {
         const [source, subSource] = it.split('.');
@@ -91,7 +91,7 @@ const filterNotes = (rawNotes, queryParams) => {
  * @returns {Promise} Promise object represents a list of notes
  */
 const getNotes = async (query) => {
-  const { studentId } = query;
+  const { 'filter[studentId]': studentId } = query;
   const prefix = `${studentId}/`;
   const objects = await awsOps.listObjects({ Prefix: prefix });
 
