@@ -1,4 +1,4 @@
-# Notes API ![version](https://img.shields.io/badge/version-v1-blue.svg) [![openapi](https://img.shields.io/badge/openapi-2.0-green.svg)](./openapi.yaml) ![node](https://img.shields.io/badge/node-10.13-brightgreen.svg)![npm](https://img.shields.io/badge/npm-6.11.1-orange.svg)
+# Express API Skeleton ![version](https://img.shields.io/badge/version-v1-blue.svg) [![openapi](https://img.shields.io/badge/openapi-2.0-green.svg)](./openapi.yaml) ![node](https://img.shields.io/badge/node-10.17-brightgreen.svg) ![npm](https://img.shields.io/badge/npm-6.11.1-orange.svg)
 
 This API allows operations for notes that advisors have made on students. Documentation for this API is contained in the [OpenAPI specification](./openapi.yaml).
 
@@ -26,6 +26,8 @@ This API allows operations for notes that advisors have made on students. Docume
     | `${API_USER}` | The HTTP Basic username used to authenticate API calls. |
     | `${API_PASSWD}` | The HTTP Basic password used to authenticate API calls. |
 
+5 Copy [db/mock-data-example.json](db/mock-data-example.yaml) to `db/mock-data.json`. This will serve as the JSON DB, which is not committed to source code as it will change as the POST endpoint is used.
+
 ### Installing
 
 ```shell
@@ -37,11 +39,11 @@ $ npm install
 Run the application:
 
   ```shell
-  # Build and run the app
-  $ gulp devRun
+  # Build and run the app and watch for changes using nodemon
+  $ npm run dev
 
   # Run the app without building
-  $ gulp start
+  $ npm start
   ```
 
 ## Running the tests
@@ -136,4 +138,131 @@ paths. The list of functions that use this plugin can be found in
     $ git checkout feature/CO-1234-branch
     $ git merge skeleton/master
     $ git commit -v
+    ```
+
+## Getting data source from HTTP endpoints
+
+The following instructions show you how to get data from external endpoints for use in the API.
+
+1. Define `dataSources/http` section in the `/config/default.yaml` to be like:
+
+    ```yaml
+    dataSources:
+      dataSources: ['http']
+      http:
+        url: 'https://api.example.com'
+    ```
+
+2. Copy [src/api/v1/db/http/pets-dao-example.js](./src/api/v1/db/http/pets-dao-example.js) to `src/api/v1/db/http/<resources>-dao.js` and modify as necessary:
+
+    ```shell
+    $ cp src/api/v1/db/http/pets-dao-example.js src/api/v1/db/http/<resources>-dao.js
+    ```
+
+3. Make sure to use the correct path for the new DAO file at path handlers files:
+
+    ```js
+    import petsDao from '../db/http/<resources>-dao';
+    ```
+
+## Getting data source from the Oracle Database
+
+The following instructions show you how to connect the API to an Oracle database.
+
+1. Install [Oracle Instant Client](http://www.oracle.com/technetwork/database/database-technologies/instant-client/overview/index.html) by following [this installation guide](https://oracle.github.io/odpi/doc/installation.html). **IMPORTANT:** Download the Basic Package, not the Basic Light Package.
+
+2. Define `dataSources/oracledb` section in the `/config/default.yaml` to be like:
+
+    ```yaml
+    dataSources:
+      dataSources: ['oracledb']
+      oracledb:
+        connectString: 'DB_URL'
+        user: 'DB_USER'
+        password: 'DB_PASSWD'
+        poolMin: 4
+        poolMax: 4
+        poolIncrement: 0:
+    ```
+
+    **Options for database configuration**:
+
+    | Option | Description |
+    | ------ | ----------- |
+    | `poolMin` | The minimum number of connections a connection pool maintains, even when there is no activity to the target database. |
+    | `poolMax` | The maximum number of connections that can be open in the connection pool. |
+    | `poolIncrement` | The number of connections that are opened whenever a connection request exceeds the number of currently open connections. |
+
+    > Note: To avoid `ORA-02396: exceeded maximum idle time` and prevent deadlocks, the [best practice](https://github.com/oracle/node-oracledb/issues/928#issuecomment-398238519) is to keep `poolMin` the same as `poolMax`. Also, ensure [increasing the number of worker threads](https://github.com/oracle/node-oracledb/blob/node-oracledb-v1/doc/api.md#-82-connections-and-number-of-threads) available to node-oracledb. The thread pool size should be at least equal to the maximum number of connections and less than 128.
+
+3. If the SQL codes/queries contain intellectual property like Banner table names, put them into `src/api/v1/db/oracledb/contrib` folder and use [git-submodule](https://git-scm.com/docs/git-submodule) to manage submodules:
+
+    * Add the given repository as a submodule at `src/api/v1/db/oracledb/contrib`:
+
+        ```shell
+        $ git submodule add <contrib_repo_git_url> src/api/v1/db/oracledb/contrib
+        ```
+
+    * Fetch the submodule from the contrib repository:
+
+        ```shell
+        $ git submodule update --init
+        ```
+
+4. Copy [src/api/v1/db/oracledb/pets-dao-example.js](./src/api/v1/db/oracledb/pets-dao-example.js) to `src/api/v1/db/oracledb/<resources>-dao.js` and modify as necessary:
+
+    ```shell
+    $ cp src/api/v1/db/oracledb/pets-dao-example.js src/api/v1/db/oracledb/<resources>-dao.js
+    ```
+
+5. Make sure to use the correct path for the new DAO file at path handlers files:
+
+    ```js
+    import petsDao from '../db/oracledb/<resources>-dao';
+    ```
+
+## Getting data source from an AWS S3 bucket
+
+The following instructions show you how to get data from an AWS S3 bucket
+
+1. Install [aws-sdk](https://www.npmjs.com/package/aws-sdk) via package management:
+
+    ```shell
+    $ npm install aws-sdk
+    ```
+
+2. Define the `dataSources` field in `config/default.yaml` to be like:
+
+    ```yaml
+    dataSources:
+      dataSources: ['awsS3']
+      awsS3:
+        bucket: BUCKET_NAME
+        apiVersion: API_VERSION
+        accessKeyId: ACCESS_KEY_ID
+        secretAccessKey: SECRET_ACCESS_KEY
+        region: REGION
+        endpoint: null
+        s3ForcePathStyle: false
+    ```
+
+    **Options for configuration**:
+
+    | Option | Description |
+    | ------ | ----------- |
+    | `bucket` | The name of the AWS S3 bucket to use |
+    | `apiVersion` | Version of the S3 API. Example: `'2006-03-01'` |
+    | `endpoint` | When using a local or proxy S3 instance, set this value to the host URL. Example: `http://localhost:9000` |
+    | `s3ForcePathStyle` | Set to `true` if using a local or proxy S3 instance |
+
+3. Copy [src/api/v1/db/awsS3/pets-dao-example.js](./src/api/v1/db/awsS3/pets-dao-example.js) to `src/api/v1/db/awsS3/<resources>-dao.js` and modify as necessary:
+
+    ```shell
+    $ cp src/api/v1/db/awsS3/pets-dao-example.js src/api/v1/db/awsS3/<resources>-dao.js
+    ```
+
+4. Make sure to use the correct path for the new DAO file at path handlers files:
+
+    ```js
+    import petsDao from '../db/awsS3/<resources>-dao';
     ```
