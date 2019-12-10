@@ -67,6 +67,6 @@ const del = async (req, res) => {
 
 get.apiDoc = paths['/notes/{noteId}'].get;
 patch.apiDoc = paths['/notes/{noteId}'].patch;
-del.apiDoc = paths['/notes/{noteId}'].del;
+del.apiDoc = paths['/notes/{noteId}'].delete;
 
 export { get, patch, del };
