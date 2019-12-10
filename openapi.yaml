@@ -26,8 +26,6 @@ security:
       - full
 paths:
   /notes:
-    parameters:
-      - $ref: '#/parameters/authorization'
     get:
       summary: Get notes for a student
       tags:
@@ -126,7 +124,6 @@ paths:
             $ref: '#/definitions/ErrorResult'
   /notes/{noteId}:
     parameters:
-      - $ref: '#/parameters/authorization'
       - $ref: '#/parameters/noteId'
     get:
       summary: Get a note by its noteId
