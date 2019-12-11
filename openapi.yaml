@@ -21,10 +21,11 @@ produces:
   - application/json
 consumes:
   - application/json
+security:
+  - OAuth2:
+      - full
 paths:
   /notes:
-    parameters:
-      - $ref: '#/parameters/authorization'
     get:
       summary: Get notes for a student
       tags:
@@ -90,13 +91,9 @@ paths:
           schema:
             $ref: '#/definitions/NotesResult'
         '400':
-          description: Bad request
-          schema:
-            $ref: '#/definitions/ErrorResult'
+          $ref: '#/responses/400'
         '500':
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResult'
+          $ref: '#/responses/500'
     post:
       summary: Create a new note
       tags:
@@ -127,7 +124,6 @@ paths:
             $ref: '#/definitions/ErrorResult'
   /notes/{noteId}:
     parameters:
-      - $ref: '#/parameters/authorization'
       - $ref: '#/parameters/noteId'
     get:
       summary: Get a note by its noteId
@@ -193,9 +189,7 @@ paths:
           schema:
             $ref: '#/definitions/ErrorResult'
         '500':
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResult'
+          $ref: '#/responses/500'
 parameters:
   noteId:
     name: noteId
@@ -209,6 +203,22 @@ parameters:
     type: string
     required: true
     description: '"Bearer [token]" where [token] is your OAuth2 access token'
+responses:
+  '400':
+     description: Bad request
+     schema:
+       $ref: '#/definitions/ErrorResult'
+  '500':
+     description: Internal server error
+     schema:
+       $ref: '#/definitions/ErrorResult'
+securityDefinitions:
+  OAuth2:
+    type: oauth2
+    flow: application
+    tokenUrl: https://api.oregonstate.edu/oauth2/token
+    scopes:
+      full: Full access to the API
 definitions:
   NoteResource:
     properties:

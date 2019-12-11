@@ -1,4 +1,4 @@
-# Notes API ![version](https://img.shields.io/badge/version-v1-blue.svg) [![openapi](https://img.shields.io/badge/openapi-2.0-green.svg)](./openapi.yaml) ![node](https://img.shields.io/badge/node-10.13-brightgreen.svg)![npm](https://img.shields.io/badge/npm-6.11.1-orange.svg)
+# Notes API ![version](https://img.shields.io/badge/version-v1-blue.svg) [![openapi](https://img.shields.io/badge/openapi-2.0-green.svg)](./openapi.yaml) ![node](https://img.shields.io/badge/node-10.17-brightgreen.svg) ![npm](https://img.shields.io/badge/npm-6.11.1-orange.svg)
 
 This API allows operations for notes that advisors have made on students. Documentation for this API is contained in the [OpenAPI specification](./openapi.yaml).
 
@@ -26,6 +26,8 @@ This API allows operations for notes that advisors have made on students. Docume
     | `${API_USER}` | The HTTP Basic username used to authenticate API calls. |
     | `${API_PASSWD}` | The HTTP Basic password used to authenticate API calls. |
 
+5 Copy [db/mock-data-example.json](db/mock-data-example.yaml) to `db/mock-data.json`. This will serve as the JSON DB, which is not committed to source code as it will change as the POST endpoint is used.
+
 ### Installing
 
 ```shell
@@ -37,11 +39,11 @@ $ npm install
 Run the application:
 
   ```shell
-  # Build and run the app
-  $ gulp devRun
+  # Build and run the app and watch for changes using nodemon
+  $ npm run dev
 
   # Run the app without building
-  $ gulp start
+  $ npm start
   ```
 
 ## Running the tests
@@ -136,4 +138,50 @@ paths. The list of functions that use this plugin can be found in
     $ git checkout feature/CO-1234-branch
     $ git merge skeleton/master
     $ git commit -v
+    ```
+
+## Getting data source from an AWS S3 bucket
+
+The following instructions show you how to get data from an AWS S3 bucket
+
+1. Install [aws-sdk](https://www.npmjs.com/package/aws-sdk) via package management:
+
+    ```shell
+    $ npm install aws-sdk
+    ```
+
+2. Define the `dataSources` field in `config/default.yaml` to be like:
+
+    ```yaml
+    dataSources:
+      dataSources: ['awsS3']
+      awsS3:
+        bucket: BUCKET_NAME
+        apiVersion: API_VERSION
+        accessKeyId: ACCESS_KEY_ID
+        secretAccessKey: SECRET_ACCESS_KEY
+        region: REGION
+        endpoint: null
+        s3ForcePathStyle: false
+    ```
+
+    **Options for configuration**:
+
+    | Option | Description |
+    | ------ | ----------- |
+    | `bucket` | The name of the AWS S3 bucket to use |
+    | `apiVersion` | Version of the S3 API. Example: `'2006-03-01'` |
+    | `endpoint` | When using a local or proxy S3 instance, set this value to the host URL. Example: `http://localhost:9000` |
+    | `s3ForcePathStyle` | Set to `true` if using a local or proxy S3 instance |
+
+3. Copy [src/api/v1/db/awsS3/pets-dao-example.js](./src/api/v1/db/awsS3/pets-dao-example.js) to `src/api/v1/db/awsS3/<resources>-dao.js` and modify as necessary:
+
+    ```shell
+    $ cp src/api/v1/db/awsS3/pets-dao-example.js src/api/v1/db/awsS3/<resources>-dao.js
+    ```
+
+4. Make sure to use the correct path for the new DAO file at path handlers files:
+
+    ```js
+    import petsDao from '../db/awsS3/<resources>-dao';
     ```

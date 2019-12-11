@@ -1,3 +1,4 @@
+"""Integration tests"""
 from itertools import chain, combinations
 import json
 import logging
@@ -12,9 +13,13 @@ from prance import ResolvingParser
 import utils
 
 
-class integration_tests(unittest.TestCase):
+class IntegrationTests(utils.UtilsTestCase):
+    """Integration tests class"""
+
     @classmethod
     def setup(cls, config_path, openapi_path):
+        """Performs basic setup"""
+
         with open(config_path) as config_file:
             config = json.load(config_file)
             cls.base_url = utils.setup_base_url(config)
@@ -45,8 +50,7 @@ class integration_tests(unittest.TestCase):
             resource='NoteResource',
             endpoint=''
     ):
-        return utils.test_endpoint(
-            self,
+        return self.check_endpoint(
             f'/notes{endpoint}',
             resource,
             status,
@@ -321,5 +325,5 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.INFO)
 
-    integration_tests.setup(arguments.config_path, arguments.openapi_path)
+    IntegrationTests.setup(arguments.config_path, arguments.openapi_path)
     unittest.main(argv=argv)
