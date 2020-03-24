@@ -264,6 +264,7 @@ definitions:
         items:
           $ref: '#/definitions/NoteResource'
   NotePostBody:
+    type: object
     properties:
       data:
         type: object
